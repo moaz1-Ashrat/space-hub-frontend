@@ -1,0 +1,29 @@
+{
+  "appName": "Space Hub",
+  "welcome": "Welcome to Space Hub",
+  "tagline": "Find your perfect space",
+  "loading": "Loading...",
+  "save": "Save",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "delete": "Delete",
+  "edit": "Edit",
+  "create": "Create",
+  "search": "Search",
+  "back": "Back",
+  "next": "Next",
+  "previous": "Previous",
+  "yes": "Yes",
+  "no": "No",
+  "language": "Language",
+  "english": "English",
+  "arabic": "Arabic",
+  "theme": "Theme",
+  "light": "Light",
+  "dark": "Dark",
+  "notFound": {
+    "title": "Page Not Found",
+    "message": "The page you are looking for does not exist.",
+    "goHome": "Go Home"
+  }
+}

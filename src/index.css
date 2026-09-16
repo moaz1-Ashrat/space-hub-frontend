@@ -1,0 +1,99 @@
+/* ==========================================
+   Fonts — Loaded from Google Fonts
+   ========================================== */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ==========================================
+   Tailwind Directives
+   ========================================== */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================
+   Design Tokens — Light Mode (Default)
+   ========================================== */
+:root {
+  /* Colors — Light */
+  --color-primary: #4F46E5;
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary: #14B8A6;
+  --color-secondary-foreground: #FFFFFF;
+  --color-background: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-text-main: #1F2937;
+  --color-text-muted: #6B7280;
+  --color-border: #E5E7EB;
+  --color-input: #E5E7EB;
+  --color-ring: #4F46E5;
+
+  /* Status Colors — Same in both themes */
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  --color-info: #0EA5E9;
+
+  /* Fonts */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-heading: 'Cairo', 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* ==========================================
+   Design Tokens — Dark Mode
+   ========================================== */
+.dark {
+  --color-primary: #6366F1;
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary: #2DD4BF;
+  --color-secondary-foreground: #0F172A;
+  --color-background: #0F172A;
+  --color-surface: #1E293B;
+  --color-text-main: #F1F5F9;
+  --color-text-muted: #94A3B8;
+  --color-border: #334155;
+  --color-input: #334155;
+  --color-ring: #6366F1;
+}
+
+/* ==========================================
+   Base Styles
+   ========================================== */
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+
+  code, pre, .font-mono {
+    font-family: var(--font-mono);
+  }
+}
+
+/* ==========================================
+   Utilities
+   ========================================== */
+@layer utilities {
+  /* Hides scrollbar visually but keeps scrolling functional */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
