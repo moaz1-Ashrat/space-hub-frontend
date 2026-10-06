@@ -15,28 +15,45 @@ export default {
     },
     extend: {
       colors: {
+        border: 'var(--border)',
+        input: 'var(--input)',
+        ring: 'var(--ring)',
+        background: 'var(--background)',
+        foreground: 'var(--foreground)',
         primary: {
-          DEFAULT: 'var(--color-primary)',
-          foreground: 'var(--color-primary-foreground)',
+          DEFAULT: 'var(--primary)',
+          foreground: 'var(--primary-foreground)',
         },
         secondary: {
-          DEFAULT: 'var(--color-secondary)',
-          foreground: 'var(--color-secondary-foreground)',
+          DEFAULT: 'var(--secondary)',
+          foreground: 'var(--secondary-foreground)',
         },
-        background: 'var(--color-background)',
-        surface: 'var(--color-surface)',
-        foreground: 'var(--color-text-main)',
+        destructive: {
+          DEFAULT: 'var(--destructive)',
+          foreground: 'var(--destructive-foreground)',
+        },
         muted: {
-          DEFAULT: 'var(--color-text-muted)',
-          foreground: 'var(--color-text-muted)',
+          DEFAULT: 'var(--muted)',
+          foreground: 'var(--muted-foreground)',
         },
-        success: 'var(--color-success)',
-        warning: 'var(--color-warning)',
-        error: 'var(--color-error)',
-        info: 'var(--color-info)',
-        border: 'var(--color-border)',
-        input: 'var(--color-input)',
-        ring: 'var(--color-ring)',
+        accent: {
+          DEFAULT: 'var(--accent)',
+          foreground: 'var(--accent-foreground)',
+        },
+        popover: {
+          DEFAULT: 'var(--popover)',
+          foreground: 'var(--popover-foreground)',
+        },
+        card: {
+          DEFAULT: 'var(--card)',
+          foreground: 'var(--card-foreground)',
+        },
+        // Custom
+        surface: 'var(--surface)',
+        success: 'var(--success)',
+        warning: 'var(--warning)',
+        error: 'var(--error)',
+        info: 'var(--info)',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -44,10 +61,10 @@ export default {
         mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
       borderRadius: {
-        sm: '4px',
-        md: '6px',
-        lg: '8px',
-        xl: '12px',
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 2px)',
+        sm: 'calc(var(--radius) - 4px)',
+        xl: 'calc(var(--radius) + 4px)',
       },
       boxShadow: {
         'card': '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',

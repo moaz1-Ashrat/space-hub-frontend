@@ -5,25 +5,97 @@
   "loading": "جارٍ التحميل...",
   "save": "حفظ",
   "cancel": "إلغاء",
-  "confirm": "تأكيد",
-  "delete": "حذف",
-  "edit": "تعديل",
-  "create": "إنشاء",
-  "search": "بحث",
+  "submit": "إرسال",
   "back": "رجوع",
-  "next": "التالي",
-  "previous": "السابق",
-  "yes": "نعم",
-  "no": "لا",
+  "home": "الرئيسية",
   "language": "اللغة",
-  "english": "الإنجليزية",
-  "arabic": "العربية",
   "theme": "المظهر",
   "light": "فاتح",
   "dark": "داكن",
-  "notFound": {
-    "title": "الصفحة غير موجودة",
-    "message": "الصفحة التي تبحث عنها غير موجودة.",
-    "goHome": "الذهاب للرئيسية"
+  "nav": {
+    "login": "تسجيل الدخول",
+    "register": "إنشاء حساب",
+    "logout": "خروج",
+    "dashboard": "لوحة التحكم"
+  },
+  "auth": {
+    "login": {
+      "title": "مرحبًا بعودتك",
+      "subtitle": "سجّل الدخول إلى حسابك",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "you@example.com",
+      "password": "كلمة المرور",
+      "passwordPlaceholder": "أدخل كلمة المرور",
+      "submit": "تسجيل الدخول",
+      "submitting": "جارٍ تسجيل الدخول...",
+      "noAccount": "ليس لديك حساب؟",
+      "registerLink": "أنشئ حسابًا",
+      "forgotPassword": "نسيت كلمة المرور؟",
+      "errors": {
+        "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+        "suspended": "تم تعليق حسابك. يرجى التواصل مع الدعم.",
+        "network": "خطأ في الشبكة. تحقق من اتصالك.",
+        "unknown": "فشل تسجيل الدخول. حاول مرة أخرى."
+      }
+    },
+    "register": {
+      "customerTitle": "أنشئ حسابك",
+      "ownerTitle": "سجّل كمالك مساحة",
+      "subtitle": "انضم إلى سبيس هاب وابدأ الحجز",
+      "ownerSubtitle": "أضف مساحتك وابدأ الربح",
+      "firstName": "الاسم الأول",
+      "lastName": "اسم العائلة",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "passwordHint": "8 أحرف على الأقل",
+      "phone": "رقم الهاتف",
+      "phonePlaceholder": "01XXXXXXXXX",
+      "gender": "الجنس",
+      "male": "ذكر",
+      "female": "أنثى",
+      "favorite": "نوع المساحة المفضلة (اختياري)",
+      "favoritePlaceholder": "مثال: صالات الألعاب",
+      "taxNumber": "الرقم الضريبي",
+      "taxNumberPlaceholder": "9 أرقام",
+      "taxNumberHint": "أدخل الرقم الضريبي المكوّن من 9 أرقام",
+      "submitCustomer": "إنشاء حساب",
+      "submitOwner": "إنشاء حساب مالك",
+      "submitting": "جارٍ الإنشاء...",
+      "hasAccount": "لديك حساب بالفعل؟",
+      "loginLink": "تسجيل الدخول",
+      "registerAsOwner": "سجّل كمالك مساحة",
+      "registerAsCustomer": "سجّل كعميل",
+      "errors": {
+        "duplicateEmail": "هذا البريد الإلكتروني مُسجّل بالفعل.",
+        "duplicateTax": "هذا الرقم الضريبي مُسجّل بالفعل.",
+        "network": "خطأ في الشبكة. تحقق من اتصالك.",
+        "unknown": "فشل التسجيل. حاول مرة أخرى."
+      }
+    },
+    "forgotPassword": {
+      "title": "نسيت كلمة المرور؟",
+      "subtitle": "أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين",
+      "email": "البريد الإلكتروني",
+      "submit": "إرسال الرابط",
+      "backToLogin": "العودة لتسجيل الدخول",
+      "notAvailable": "هذه الميزة غير متاحة بعد. يرجى التواصل مع الدعم."
+    },
+    "resetPassword": {
+      "title": "إعادة تعيين كلمة المرور",
+      "subtitle": "أدخل كلمة المرور الجديدة",
+      "password": "كلمة المرور الجديدة",
+      "confirmPassword": "تأكيد كلمة المرور",
+      "submit": "إعادة التعيين",
+      "backToLogin": "العودة لتسجيل الدخول",
+      "notAvailable": "هذه الميزة غير متاحة بعد. يرجى التواصل مع الدعم."
+    }
+  },
+  "validation": {
+    "required": "هذا الحقل مطلوب",
+    "email": "أدخل بريدًا إلكترونيًا صالحًا",
+    "passwordMin": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+    "passwordMatch": "كلمتا المرور غير متطابقتين",
+    "phone": "أدخل رقم هاتف صالح",
+    "taxNumber": "الرقم الضريبي يجب أن يكون 9 أرقام"
   }
 }
