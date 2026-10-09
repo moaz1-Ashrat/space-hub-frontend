@@ -1,38 +1,34 @@
-import { Link } from 'react-router-dom';
-import { MapPin, Users, Star } from 'lucide-react';
-import type { Space } from '../types';
+import { Link } from "react-router-dom";
+import { MapPin, Users, Star } from "lucide-react";
+import type { Space } from "../types";
 
 interface SpaceCardProps {
   space: Space;
 }
 
 export function SpaceCard({ space }: SpaceCardProps) {
-  // Get primary image URL (fallback to first image)
-  const coverUrl =
-    space.primary_image?.url ?? space.images?.[0]?.url ?? null;
+  const coverUrl = space.primary_image?.url ?? space.images?.[0]?.url ?? null;
 
   return (
     <Link
       to={`/spaces/${space.id}`}
-      className="group block bg-card border border-border rounded-xl overflow-hidden shadow-card hover:shadow-modal transition-all hover:-translate-y-0.5"
+      className="group block bg-card border border-border rounded-xl overflow-hidden shadow-card hover:shadow-2xl hover:border-primary/30 transition-all duration-300 hover:-translate-y-1"
     >
-      {/* Cover Image or Placeholder */}
+      {/* Cover Image */}
       <div className="aspect-video bg-gradient-to-br from-primary/20 to-secondary/20 relative overflow-hidden">
         {coverUrl ? (
           <>
             <img
               src={coverUrl}
               alt={space.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
               loading="lazy"
             />
-            {/* Gradient Overlay for better text contrast */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </>
         ) : (
-          // Fallback: Letter placeholder
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-4xl font-heading font-bold text-primary/40">
+            <span className="text-5xl font-heading font-bold text-primary/40">
               {space.name.charAt(0)}
             </span>
           </div>
@@ -40,14 +36,14 @@ export function SpaceCard({ space }: SpaceCardProps) {
 
         {/* Image Count Badge */}
         {space.images && space.images.length > 1 && (
-          <div className="absolute top-3 end-3 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm text-white text-xs font-medium">
+          <div className="absolute top-3 end-3 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm text-white text-xs font-medium flex items-center gap-1">
             📷 {space.images.length}
           </div>
         )}
 
         {/* Rating Badge */}
         {space.average_rating && (
-          <div className="absolute top-3 start-3 px-2 py-1 rounded-md bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-bold flex items-center gap-1 shadow-sm">
+          <div className="absolute top-3 start-3 px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-sm text-gray-900 text-xs font-bold flex items-center gap-1 shadow-md">
             <Star className="size-3 fill-current text-warning" />
             {space.average_rating.toFixed(1)}
           </div>
@@ -72,19 +68,21 @@ export function SpaceCard({ space }: SpaceCardProps) {
             {space.capacity_people}
           </span>
           <span className="capitalize">
-            {space.space_type.replace('_', ' ')}
+            {space.space_type.replace("_", " ")}
           </span>
         </div>
 
-        {/* Price */}
-        <div className="flex items-baseline justify-between pt-2 border-t border-border">
+        <div className="flex items-baseline justify-between pt-3 border-t border-border">
           <div>
-            <span className="text-xl font-bold text-primary font-mono">
+            <span className="text-2xl font-bold text-primary font-mono">
               {Number(space.price_per_hour).toFixed(2)}
             </span>
             <span className="text-xs text-muted-foreground ms-1">
               EGP / hour
             </span>
+          </div>
+          <div className="text-primary text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+            Book →
           </div>
         </div>
       </div>

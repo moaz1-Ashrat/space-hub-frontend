@@ -96,3 +96,77 @@ export interface PendingSpacesPaginated {
     next: string | null;
   };
 }
+// ============================================
+// All Spaces (Admin)
+// ============================================
+export interface SpaceFilters {
+  approval_status?: 'pending' | 'approved' | 'rejected';
+  space_type?: string;
+  owner_id?: number;
+  search?: string;
+  page?: number;
+}
+
+export interface AdminSpace {
+  id: number;
+  name: string;
+  location: string;
+  space_type: string;
+  price_per_hour: number;
+  capacity_people: number;
+  approval_status: 'pending' | 'approved' | 'rejected';
+  owner: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  primary_image: { id: number; url: string } | null;
+  created_at: string;
+}
+
+export interface AllSpacesPaginated {
+  data: AdminSpace[];
+  meta: {
+    current_page: number;
+    per_page: number;
+    total: number;
+    last_page: number;
+  };
+  links: {
+    prev: string | null;
+    next: string | null;
+  };
+}
+
+// ============================================
+// User Detail (Admin)
+// ============================================
+export interface AdminUserDetail {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  role: UserRole;
+  is_active: boolean;
+  gender: 'male' | 'female';
+  created_at: string;
+
+  // Role-specific data
+  customer?: {
+    favorite: string | null;
+    total_bookings: number;
+    total_spent: number;
+    total_reviews: number;
+  } | null;
+
+  space_owner?: {
+    tax_registration_number: string;
+    total_spaces: number;
+    approved_spaces: number;
+    total_earnings: number;
+  } | null;
+
+  admin?: {
+    level_of_authority: string;
+  } | null;
+}

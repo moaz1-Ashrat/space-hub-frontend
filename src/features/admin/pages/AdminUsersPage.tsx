@@ -1,13 +1,19 @@
+// src/features/admin/pages/AdminUsersPage.tsx
 import { useState } from 'react';
-import { Search } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { AlertCircle, Search, Users } from 'lucide-react';
+
 import { useAdminUsers } from '../hooks/useAdminUsers';
 import { useSuspendUser } from '../hooks/useSuspendUser';
 import { useActivateUser } from '../hooks/useActivateUser';
 import { AdminUserCard } from '../components/AdminUserCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 import type { UserFilters } from '../types';
 import type { UserRole } from '@/types';
+import { staggerContainer, staggerItem, fadeUp } from '@/lib/animations';
 
 type RoleFilter = UserRole | 'all';
 
@@ -30,7 +36,7 @@ export function AdminUsersPage() {
     ...(search ? { search } : {}),
   };
 
-  const { data, isLoading, isError } = useAdminUsers(filters);
+  const { data, isLoading, isError, refetch } = useAdminUsers(filters);
   const suspendMutation = useSuspendUser();
   const activateMutation = useActivateUser();
 
@@ -40,26 +46,62 @@ export function AdminUsersPage() {
     setPage(1);
   };
 
+  const hasActiveFilters = roleFilter !== 'all' || !!search;
+
+  const handleClearFilters = () => {
+    setRoleFilter('all');
+    setSearch('');
+    setSearchInput('');
+    setPage(1);
+  };
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-heading font-bold">Users Management</h1>
-        <p className="text-muted-foreground mt-1">
-          Manage all platform users and their access
-        </p>
-      </div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-6"
+    >
+      {/* Header */}
+      <motion.div
+        variants={fadeUp}
+        initial="hidden"
+        animate="visible"
+        className="flex items-start justify-between gap-4 flex-wrap"
+      >
+        <div>
+          <h1 className="text-3xl font-heading font-bold flex items-center gap-2">
+            <Users className="size-7 text-primary" />
+            Users Management
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Manage all platform users and their access
+          </p>
+        </div>
+        {data && (
+          <div className="px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
+            {data.meta.total} user{data.meta.total === 1 ? '' : 's'}
+          </div>
+        )}
+      </motion.div>
 
       {/* Filters Row */}
-      <div className="flex flex-col md:flex-row gap-3">
+      <motion.div
+        variants={fadeUp}
+        initial="hidden"
+        animate="visible"
+        className="flex flex-col md:flex-row gap-3"
+      >
         <form onSubmit={handleSearch} className="flex gap-2 flex-1">
-          <Input
-            placeholder="Search by name or email..."
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-          />
-          <Button type="submit">
-            <Search className="size-4" />
-          </Button>
+          <div className="relative flex-1">
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by name or email..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="ps-9"
+            />
+          </div>
+          <Button type="submit">Search</Button>
         </form>
 
         <div className="flex flex-wrap gap-2">
@@ -70,9 +112,9 @@ export function AdminUsersPage() {
                 setRoleFilter(f.value);
                 setPage(1);
               }}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
                 roleFilter === f.value
-                  ? 'bg-primary text-white'
+                  ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
                   : 'bg-card border border-border text-muted-foreground hover:border-primary/40'
               }`}
             >
@@ -80,52 +122,86 @@ export function AdminUsersPage() {
             </button>
           ))}
         </div>
-      </div>
+      </motion.div>
 
-      {/* Content */}
+      {/* Loading */}
       {isLoading && (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-24 bg-muted animate-pulse rounded-xl" />
+            <Skeleton key={i} className="h-24 rounded-xl" />
           ))}
         </div>
       )}
 
+      {/* Error */}
       {isError && (
-        <div className="p-8 text-center bg-error/5 border border-error/20 rounded-xl">
-          <p className="text-error">Failed to load users</p>
-        </div>
-      )}
-
-      {data && data.data.length === 0 && (
-        <div className="p-12 text-center bg-card border border-border rounded-xl">
-          <p className="text-lg font-medium">No users found</p>
-          <p className="text-muted-foreground mt-1">
-            Try adjusting your search or filters
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-8 text-center bg-destructive/5 border border-destructive/20 rounded-xl"
+        >
+          <div className="w-14 h-14 mx-auto rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+            <AlertCircle className="size-7 text-destructive" />
+          </div>
+          <p className="text-lg font-medium text-destructive">
+            Failed to load users
           </p>
-        </div>
+          <p className="text-sm text-muted-foreground mt-1 mb-4">
+            Something went wrong. Please try again.
+          </p>
+          <Button variant="outline" onClick={() => refetch()}>
+            Try Again
+          </Button>
+        </motion.div>
       )}
 
+      {/* Empty - no data at all */}
+      {data && data.data.length === 0 && !hasActiveFilters && (
+        <EmptyState
+          icon={Users}
+          title="No users yet"
+          description="Users will appear here once they register on the platform."
+        />
+      )}
+
+      {/* Empty - filtered */}
+      {data && data.data.length === 0 && hasActiveFilters && (
+        <EmptyState
+          icon={Search}
+          title="No users match your filters"
+          description="Try adjusting your search or role filter to find what you're looking for."
+          actionLabel="Clear Filters"
+          onAction={handleClearFilters}
+        />
+      )}
+
+      {/* Data */}
       {data && data.data.length > 0 && (
         <>
-          <div className="space-y-3">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+            className="space-y-3"
+          >
             {data.data.map((user) => (
-              <AdminUserCard
-                key={user.id}
-                user={user}
-                onSuspend={(id) => suspendMutation.mutate(id)}
-                onActivate={(id) => activateMutation.mutate(id)}
-                isSuspending={
-                  suspendMutation.isPending &&
-                  suspendMutation.variables === user.id
-                }
-                isActivating={
-                  activateMutation.isPending &&
-                  activateMutation.variables === user.id
-                }
-              />
+              <motion.div key={user.id} variants={staggerItem}>
+                <AdminUserCard
+                  user={user}
+                  onSuspend={(id) => suspendMutation.mutate(id)}
+                  onActivate={(id) => activateMutation.mutate(id)}
+                  isSuspending={
+                    suspendMutation.isPending &&
+                    suspendMutation.variables === user.id
+                  }
+                  isActivating={
+                    activateMutation.isPending &&
+                    activateMutation.variables === user.id
+                  }
+                />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
           {data.meta.last_page > 1 && (
             <div className="flex items-center justify-center gap-3 pt-4">
@@ -150,6 +226,6 @@ export function AdminUsersPage() {
           )}
         </>
       )}
-    </div>
+    </motion.div>
   );
 }

@@ -1,3 +1,4 @@
+// src/features/owner/pages/CreateSpacePage.tsx
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -35,11 +36,11 @@ export function CreateSpacePage() {
 
       const spaceId = result.data.id;
 
-      // 2. Upload pending images (if any)
-      if (pendingImages.length > 0) {
-        let successCount = 0;
-        let failCount = 0;
+      // 2. Upload pending images (silent — no individual toasts)
+      let uploadedImages = 0;
+      let failedImages = 0;
 
+      if (pendingImages.length > 0) {
         for (let i = 0; i < pendingImages.length; i++) {
           try {
             await spaceService.uploadImage(
@@ -47,24 +48,35 @@ export function CreateSpacePage() {
               pendingImages[i],
               i === 0 // First image is primary
             );
-            successCount++;
+            uploadedImages++;
           } catch (err) {
             console.error('Image upload failed:', err);
-            failCount++;
+            failedImages++;
           }
-        }
-
-        if (failCount > 0) {
-          toast.warning(
-            `${successCount} photos uploaded, ${failCount} failed. You can retry in edit page.`
-          );
-        } else {
-          toast.success(`${successCount} photo(s) uploaded`);
         }
       }
 
-      // 3. Redirect
-      navigate('/owner/spaces');
+      // 3. SINGLE consolidated toast (prevents stacking)
+      const imageInfo =
+        uploadedImages > 0
+          ? ` ${uploadedImages} photo${uploadedImages === 1 ? '' : 's'} uploaded.`
+          : '';
+
+      const failInfo =
+        failedImages > 0
+          ? ` ${failedImages} image${failedImages === 1 ? '' : 's'} failed — retry in edit page.`
+          : '';
+
+      toast.success('Space created successfully!', {
+        id: 'space-created', // ✅ prevents duplicate stacking
+        description: `Now add availability so customers can book it.${imageInfo}${failInfo}`,
+        duration: 5000,
+      });
+
+      // 4. Redirect to Availability page
+      navigate(`/owner/spaces/${spaceId}/availability`, {
+        state: { isNewSpace: true },
+      });
     } catch {
       // Error already handled by mutation's onError
     }
@@ -85,6 +97,10 @@ export function CreateSpacePage() {
         <p className="text-muted-foreground mt-1">
           Fill in the details below to list your space
         </p>
+        <div className="mt-3 p-3 rounded-lg bg-primary/5 border border-primary/20 text-xs">
+          <strong>💡 Next step:</strong> After creating, you'll set up the
+          weekly availability so customers can book your space.
+        </div>
       </div>
 
       {featuresLoading ? (

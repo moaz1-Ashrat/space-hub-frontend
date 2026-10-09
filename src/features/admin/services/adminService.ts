@@ -8,6 +8,9 @@ import type {
   TransactionFilters,
   DashboardStats,
   PendingSpacesPaginated,
+  SpaceFilters,
+  AllSpacesPaginated,
+  AdminUserDetail,
 } from '../types';
 
 export const adminService = {
@@ -85,6 +88,30 @@ export const adminService = {
   async getDashboard(): Promise<{ data: DashboardStats }> {
     const { data } = await apiClient.get<{ data: DashboardStats }>(
       '/admin/dashboard'
+    );
+    return data;
+  },
+  // ============================================
+  // ALL SPACES (Admin)
+  // ============================================
+
+  async getAllSpaces(
+    filters: SpaceFilters = {}
+  ): Promise<AllSpacesPaginated> {
+    const { data } = await apiClient.get<AllSpacesPaginated>(
+      '/admin/spaces',
+      { params: filters }
+    );
+    return data;
+  },
+
+  // ============================================
+  // USER DETAIL (Admin)
+  // ============================================
+
+  async getUserDetail(id: number): Promise<{ data: AdminUserDetail }> {
+    const { data } = await apiClient.get<{ data: AdminUserDetail }>(
+      `/admin/users/${id}`
     );
     return data;
   },

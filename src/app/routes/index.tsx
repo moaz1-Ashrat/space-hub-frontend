@@ -16,6 +16,9 @@ import { ResetPasswordPage } from '../../features/auth/pages/ResetPasswordPage';
 import { HomePage } from '../../features/home/pages/HomePage';
 import { SpacesListPage } from '../../features/spaces/pages/SpacesListPage';
 import { SpaceDetailPage } from '../../features/spaces/pages/SpaceDetailPage';
+import { AboutPage } from '../../features/pages/AboutPage';
+import { ContactPage } from '../../features/pages/ContactPage';
+import { NotFoundPage } from '../../features/pages/NotFoundPage';
 
 // Customer
 import { CustomerOverviewPage } from '../../features/customer/pages/CustomerOverviewPage';
@@ -23,6 +26,7 @@ import { MyBookingsPage } from '../../features/bookings/pages/MyBookingsPage';
 import { BookingDetailPage } from '../../features/bookings/pages/BookingDetailPage';
 import { CheckoutPage } from '../../features/bookings/pages/CheckoutPage';
 import { PaymentsPage } from '../../features/payments/pages/PaymentsPage';
+import { MyReviewsPage } from '../../features/reviews/pages/MyReviewsPage';
 import { ProfilePage } from '../../features/customer/pages/ProfilePage';
 
 // Owner
@@ -30,6 +34,8 @@ import { OwnerOverviewPage } from '../../features/owner/pages/OwnerOverviewPage'
 import { MySpacesPage } from '../../features/owner/pages/MySpacesPage';
 import { CreateSpacePage } from '../../features/owner/pages/CreateSpacePage';
 import { EditSpacePage } from '../../features/owner/pages/EditSpacePage';
+import { SpaceAvailabilityPage } from '../../features/owner/pages/SpaceAvailabilityPage';
+import { AvailabilityOverviewPage } from '../../features/owner/pages/AvailabilityOverviewPage';
 import { OwnerBookingsPage } from '../../features/owner/pages/OwnerBookingsPage';
 import { EarningsPage } from '../../features/owner/pages/EarningsPage';
 
@@ -40,9 +46,8 @@ import { AdminPendingSpacesPage } from '../../features/admin/pages/AdminPendingS
 import { AdminTransactionsPage } from '../../features/admin/pages/AdminTransactionsPage';
 import { AdminAnalyticsPage } from '../../features/admin/pages/AdminAnalyticsPage';
 import { AdminSettingsPage } from '../../features/admin/pages/AdminSettingsPage';
-
-// Shared
-const NotFoundPage = () => <div className="p-8">404 Not Found</div>;
+import { AdminAllSpacesPage } from '../../features/admin/pages/AdminAllSpacesPage';
+import { AdminUserDetailPage } from '../../features/admin/pages/AdminUserDetailPage';
 
 export const router = createBrowserRouter([
   // Public
@@ -53,6 +58,8 @@ export const router = createBrowserRouter([
       { index: true, element: <HomePage /> },
       { path: 'spaces', element: <SpacesListPage /> },
       { path: 'spaces/:id', element: <SpaceDetailPage /> },
+      { path: 'about', element: <AboutPage /> },
+      { path: 'contact', element: <ContactPage /> },
     ],
   },
 
@@ -83,6 +90,7 @@ export const router = createBrowserRouter([
               { path: '/customer/bookings/:id', element: <BookingDetailPage /> },
               { path: '/customer/bookings/:id/checkout', element: <CheckoutPage /> },
               { path: '/customer/payments', element: <PaymentsPage /> },
+              { path: '/customer/reviews', element: <MyReviewsPage /> },
               { path: '/customer/profile', element: <ProfilePage /> },
             ],
           },
@@ -105,6 +113,11 @@ export const router = createBrowserRouter([
               { path: '/owner/spaces', element: <MySpacesPage /> },
               { path: '/owner/spaces/create', element: <CreateSpacePage /> },
               { path: '/owner/spaces/:id/edit', element: <EditSpacePage /> },
+              {
+                path: '/owner/spaces/:id/availability',
+                element: <SpaceAvailabilityPage />,
+              },
+              { path: '/owner/availability', element: <AvailabilityOverviewPage /> },
               { path: '/owner/bookings', element: <OwnerBookingsPage /> },
               { path: '/owner/earnings', element: <EarningsPage /> },
             ],
@@ -130,6 +143,11 @@ export const router = createBrowserRouter([
               { path: '/admin/transactions', element: <AdminTransactionsPage /> },
               { path: '/admin/analytics', element: <AdminAnalyticsPage /> },
               { path: '/admin/settings', element: <AdminSettingsPage /> },
+               { path: '/admin/users', element: <AdminUsersPage /> },
+{ path: '/admin/users/:id', element: <AdminUserDetailPage /> },
+{ path: '/admin/spaces', element: <AdminAllSpacesPage /> },
+{ path: '/admin/spaces/pending', element: <AdminPendingSpacesPage /> },
+
             ],
           },
         ],

@@ -5,8 +5,11 @@ import type {
   CreateSpacePayload,
   UpdateSpacePayload,
   OwnerSpaceResponse,
+  Availability,
+  AvailabilityPayload,
+  AvailabilityResponse,
+  AvailabilityListResponse,
 } from '../types';
-
 export const ownerService = {
   // ============================================
   // SPACES
@@ -94,6 +97,59 @@ export const ownerService = {
     );
     return data;
   },
+  // ============================================
+  // AVAILABILITY
+  // ============================================
+
+  /**
+   * Get all availability slots for a space
+   * Endpoint: GET /spaces/{spaceId}/availability
+   */
+  async spaceAvailability(spaceId: number): Promise<AvailabilityListResponse> {
+    const { data } = await apiClient.get<AvailabilityListResponse>(
+      `/spaces/${spaceId}/availability`
+    );
+    return data;
+  },
+
+  /**
+   * Create a new availability slot
+   * Endpoint: POST /spaces/{spaceId}/availability
+   */
+  async createAvailability(
+    spaceId: number,
+    payload: AvailabilityPayload
+  ): Promise<AvailabilityResponse> {
+    const { data } = await apiClient.post<AvailabilityResponse>(
+      `/spaces/${spaceId}/availability`,
+      payload
+    );
+    return data;
+  },
+
+  /**
+   * Update an existing availability slot
+   * Endpoint: PUT /availability/{id}
+   */
+  async updateAvailability(
+    id: number,
+    payload: Partial<AvailabilityPayload>
+  ): Promise<AvailabilityResponse> {
+    const { data } = await apiClient.put<AvailabilityResponse>(
+      `/availability/${id}`,
+      payload
+    );
+    return data;
+  },
+
+  /**
+   * Delete an availability slot
+   * Endpoint: DELETE /availability/{id} (إن وُجد)
+   */
+  async deleteAvailability(id: number): Promise<void> {
+    await apiClient.delete(`/availability/${id}`);
+  },
+
 };
 
 export type { Space };

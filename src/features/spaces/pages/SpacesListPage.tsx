@@ -1,15 +1,22 @@
+// src/features/spaces/pages/SpacesListPage.tsx
 import { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
+
 import { useSpaces } from '../hooks/useSpaces';
 import { SpaceCard } from '../components/SpaceCard';
 import { SpaceCardSkeleton } from '../components/SpaceCardSkeleton';
 import { SpaceFilters } from '../components/SpaceFilters';
+import { EmptySpaces } from '../components/EmptySpaces';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/stores/authStore';
 import type { SpaceFilters as Filters } from '../types';
+import { staggerContainer, staggerItem } from '@/lib/animations';
 
 export function SpacesListPage() {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const user = useAuthStore((s) => s.user);
@@ -44,9 +51,16 @@ export function SpacesListPage() {
     setSearchParams(params);
   };
 
+  // ✅ الدالة الجديدة لمسح الفلاتر
+  const handleClearFilters = () => {
+    setFilters({});
+    setPage(1);
+    setSearchParams({});
+  };
+
   return (
     <div className="container mx-auto py-8">
-      {/* Back to Dashboard (if logged in) */}
+      {/* Back to Dashboard */}
       {isAuthenticated && user && (
         <Link
           to={dashboardPath()}
@@ -70,6 +84,7 @@ export function SpacesListPage() {
         </aside>
 
         <div className="lg:col-span-3">
+          {/* Loading */}
           {isLoading && (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {Array.from({ length: 6 }).map((_, i) => (
@@ -78,35 +93,57 @@ export function SpacesListPage() {
             </div>
           )}
 
+          {/* Error */}
           {isError && (
-            <div className="p-8 text-center bg-error/5 border border-error/20 rounded-xl">
-              <p className="text-error">Failed to load spaces.</p>
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-8 text-center bg-destructive/5 border border-destructive/20 rounded-xl"
+            >
+              <div className="w-14 h-14 mx-auto rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+                <AlertCircle className="size-7 text-destructive" />
+              </div>
+              <p className="text-lg font-medium text-destructive">
+                {t('spaces.error.title', 'Failed to load spaces')}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1 mb-4">
+                {t(
+                  'spaces.error.description',
+                  'Something went wrong. Please try again.'
+                )}
+              </p>
               <Button
                 variant="outline"
-                className="mt-3"
                 onClick={() => window.location.reload()}
               >
-                Retry
+                {t('common.retry', 'Try Again')}
               </Button>
-            </div>
+            </motion.div>
           )}
 
+          {/* Empty - ✅ مع handleClearFilters */}
           {data && data.data.length === 0 && (
-            <div className="p-12 text-center bg-card border border-border rounded-xl">
-              <p className="text-lg font-medium">No spaces found</p>
-              <p className="text-muted-foreground mt-1">
-                Try adjusting your filters
-              </p>
-            </div>
+            <EmptySpaces
+              variant="search"
+              onClearFilters={handleClearFilters}
+            />
           )}
 
+          {/* Data */}
           {data && data.data.length > 0 && (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              <motion.div
+                variants={staggerContainer}
+                initial="hidden"
+                animate="visible"
+                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
+              >
                 {data.data.map((space) => (
-                  <SpaceCard key={space.id} space={space} />
+                  <motion.div key={space.id} variants={staggerItem}>
+                    <SpaceCard space={space} />
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
 
               {data.meta.last_page > 1 && (
                 <div className="flex items-center justify-center gap-3 mt-8">

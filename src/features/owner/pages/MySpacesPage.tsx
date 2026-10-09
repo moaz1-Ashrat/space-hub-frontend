@@ -1,12 +1,20 @@
+// src/features/owner/pages/MySpacesPage.tsx
 import { Link } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Plus, AlertCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+
 import { useOwnerSpaces } from '../hooks/useOwnerSpaces';
 import { useDeleteSpace } from '../hooks/useDeleteSpace';
 import { OwnerSpaceCard } from '../components/OwnerSpaceCard';
+import { SpaceCardSkeleton } from '@/features/spaces/components/SpaceCardSkeleton';
+import { EmptySpaces } from '@/features/spaces/components/EmptySpaces';
 import { Button } from '@/components/ui/button';
+import { staggerContainer, staggerItem } from '@/lib/animations';
 
 export function MySpacesPage() {
-  const { data, isLoading, isError } = useOwnerSpaces();
+  const { t } = useTranslation();
+  const { data, isLoading, isError, refetch } = useOwnerSpaces();
   const deleteMutation = useDeleteSpace();
 
   const handleDelete = (id: number) => {
@@ -18,60 +26,73 @@ export function MySpacesPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-3xl font-heading font-bold">My Spaces</h1>
+          <h1 className="text-3xl font-heading font-bold">
+            {t('owner.spaces.title', 'My Spaces')}
+          </h1>
           <p className="text-muted-foreground mt-1">
-            Manage all your listed spaces
+            {t('owner.spaces.subtitle', 'Manage all your listed spaces')}
           </p>
         </div>
 
         <Link to="/owner/spaces/create">
           <Button>
             <Plus className="size-4" />
-            Add New Space
+            {t('owner.spaces.addNew', 'Add New Space')}
           </Button>
         </Link>
       </div>
 
-      {/* Content */}
+      {/* Loading */}
       {isLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-80 bg-muted animate-pulse rounded-xl" />
+          {Array.from({ length: 6 }).map((_, i) => (
+            <SpaceCardSkeleton key={i} />
           ))}
         </div>
       )}
 
+      {/* Error */}
       {isError && (
-        <div className="p-8 text-center bg-error/5 border border-error/20 rounded-xl">
-          <p className="text-error">Failed to load spaces</p>
-        </div>
-      )}
-
-      {data && data.data.length === 0 && (
-        <div className="p-12 text-center bg-card border border-border rounded-xl">
-          <p className="text-lg font-medium">No spaces yet</p>
-          <p className="text-muted-foreground mt-1 mb-4">
-            Start by creating your first space listing
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-8 text-center bg-destructive/5 border border-destructive/20 rounded-xl"
+        >
+          <div className="w-14 h-14 mx-auto rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+            <AlertCircle className="size-7 text-destructive" />
+          </div>
+          <p className="text-lg font-medium text-destructive">
+            {t('owner.spaces.error.title', 'Failed to load spaces')}
           </p>
-          <Link to="/owner/spaces/create">
-            <Button>
-              <Plus className="size-4" />
-              Create Your First Space
-            </Button>
-          </Link>
-        </div>
+          <p className="text-sm text-muted-foreground mt-1 mb-4">
+            {t(
+              'owner.spaces.error.description',
+              'Something went wrong. Please try again.'
+            )}
+          </p>
+          <Button variant="outline" onClick={() => refetch()}>
+            {t('common.retry', 'Try Again')}
+          </Button>
+        </motion.div>
       )}
 
+      {/* Empty */}
+      {data && data.data.length === 0 && <EmptySpaces variant="owner" />}
+
+      {/* Data */}
       {data && data.data.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+        >
           {data.data.map((space) => (
-            <OwnerSpaceCard
-              key={space.id}
-              space={space}
-              onDelete={handleDelete}
-            />
+            <motion.div key={space.id} variants={staggerItem}>
+              <OwnerSpaceCard space={space} onDelete={handleDelete} />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
     </div>
   );

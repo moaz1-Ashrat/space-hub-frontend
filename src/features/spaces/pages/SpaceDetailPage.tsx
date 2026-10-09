@@ -5,16 +5,23 @@ import {
   Users,
   Star,
   Image as ImageIcon,
+  Calendar,
 } from 'lucide-react';
 import { useSpace } from '../hooks/useSpace';
+import { useSpaceAvailability } from '../hooks/useSpaceAvailability';
+import { AvailabilityPreview } from '../components/AvailabilityPreview';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/stores/authStore';
 import { BookingFormDialog } from '@/features/bookings/components/BookingFormDialog';
 
 export function SpaceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data, isLoading, isError } = useSpace(Number(id));
+  const spaceId = Number(id);
+  const { data, isLoading, isError } = useSpace(spaceId);
+  const { data: availabilityData, isLoading: isAvailabilityLoading } =
+    useSpaceAvailability(spaceId);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const user = useAuthStore((s) => s.user);
   const [showBookingForm, setShowBookingForm] = useState(false);
@@ -29,8 +36,13 @@ export function SpaceDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-8">
-        <div className="h-96 bg-muted rounded-xl animate-pulse" />
+      <div className="container mx-auto py-8 space-y-6">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-96 rounded-xl" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Skeleton className="lg:col-span-2 h-64 rounded-xl" />
+          <Skeleton className="h-64 rounded-xl" />
+        </div>
       </div>
     );
   }
@@ -61,6 +73,10 @@ export function SpaceDetailPage() {
   const hasImages = sortedImages.length > 0;
   const activeImage = sortedImages[activeImageIndex];
 
+  const availabilityList = availabilityData?.data ?? [];
+  const activeSlots = availabilityList.filter((a) => a.is_available);
+  const hasAvailability = activeSlots.length > 0;
+
   const handleBookClick = () => {
     if (!isAuthenticated) {
       navigate('/login');
@@ -72,9 +88,7 @@ export function SpaceDetailPage() {
 
   return (
     <div className="container mx-auto py-8">
-      {/* ============================================
-          Breadcrumb Navigation
-          ============================================ */}
+      {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-4 flex-wrap">
         <Link
           to={isAuthenticated && user ? dashboardPath() : '/'}
@@ -92,9 +106,7 @@ export function SpaceDetailPage() {
         </span>
       </nav>
 
-      {/* ============================================
-          Image Gallery
-          ============================================ */}
+      {/* Image Gallery */}
       {hasImages ? (
         <div className="mb-6 space-y-3">
           <div className="aspect-[16/9] bg-muted rounded-xl overflow-hidden border border-border">
@@ -145,11 +157,10 @@ export function SpaceDetailPage() {
         </div>
       )}
 
-      {/* ============================================
-          Content Grid
-          ============================================ */}
+      {/* Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
+          {/* About + Features Card */}
           <div className="bg-card border border-border rounded-xl p-6 space-y-4">
             <div>
               <h1 className="text-3xl font-heading font-bold">{space.name}</h1>
@@ -182,6 +193,19 @@ export function SpaceDetailPage() {
                   ))}
                 </div>
               </div>
+            )}
+          </div>
+
+          {/* ✅ NEW: Availability Preview Card */}
+          <div className="bg-card border border-border rounded-xl p-6">
+            {isAvailabilityLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-14 rounded-lg" />
+                <Skeleton className="h-14 rounded-lg" />
+              </div>
+            ) : (
+              <AvailabilityPreview availability={availabilityList} />
             )}
           </div>
         </div>
@@ -227,15 +251,38 @@ export function SpaceDetailPage() {
               )}
             </div>
 
+            {/* Availability status indicator */}
+            {!isAvailabilityLoading && (
+              <div
+                className={`flex items-center gap-2 p-3 rounded-lg text-sm ${
+                  hasAvailability
+                    ? 'bg-success/10 text-success border border-success/20'
+                    : 'bg-warning/10 text-warning border border-warning/20'
+                }`}
+              >
+                <Calendar className="size-4 shrink-0" />
+                <span className="font-medium">
+                  {hasAvailability
+                    ? `${activeSlots.length} time slot${activeSlots.length === 1 ? '' : 's'} available`
+                    : 'No time slots yet'}
+                </span>
+              </div>
+            )}
+
             <Button
               className="w-full"
-              disabled={isAuthenticated && !isCustomer}
+              disabled={
+                (isAuthenticated && !isCustomer) ||
+                (!isAvailabilityLoading && !hasAvailability && isCustomer)
+              }
               onClick={handleBookClick}
             >
               {!isAuthenticated
                 ? 'Login to book'
                 : !isCustomer
                 ? 'Only customers can book'
+                : !hasAvailability
+                ? 'Not available for booking'
                 : 'Book Now'}
             </Button>
 
@@ -253,6 +300,15 @@ export function SpaceDetailPage() {
                 Only customer accounts can make bookings
               </p>
             )}
+
+            {isAuthenticated &&
+              isCustomer &&
+              !isAvailabilityLoading &&
+              !hasAvailability && (
+                <p className="text-xs text-center text-muted-foreground">
+                  The owner hasn't set up availability yet
+                </p>
+              )}
           </div>
         </aside>
       </div>

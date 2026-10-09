@@ -1,5 +1,15 @@
+// src/features/owner/components/OwnerSpaceCard.tsx
 import { Link } from 'react-router-dom';
-import { MapPin, Users, Edit, Trash2, Eye, Image as ImageIcon } from 'lucide-react';
+import {
+  MapPin,
+  Users,
+  Edit,
+  Trash2,
+  Eye,
+  Image as ImageIcon,
+  Clock,
+  ArrowRight,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Space } from '@/features/spaces/types';
 
@@ -26,7 +36,6 @@ const approvalConfig = {
 export function OwnerSpaceCard({ space, onDelete }: OwnerSpaceCardProps) {
   const config = approvalConfig[space.approval_status];
 
-  // Get cover URL (primary image or first image)
   const coverUrl =
     space.primary_image?.url ?? space.images?.[0]?.url ?? null;
 
@@ -41,14 +50,14 @@ export function OwnerSpaceCard({ space, onDelete }: OwnerSpaceCardProps) {
   };
 
   return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/40 transition-colors">
+    <div className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/40 hover:shadow-lg transition-all group">
       {/* Cover */}
       <div className="aspect-video bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center relative overflow-hidden">
         {coverUrl ? (
           <img
             src={coverUrl}
             alt={space.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             loading="lazy"
           />
         ) : (
@@ -93,7 +102,9 @@ export function OwnerSpaceCard({ space, onDelete }: OwnerSpaceCardProps) {
             <Users className="size-3.5" />
             {space.capacity_people}
           </span>
-          <span className="capitalize">{space.space_type.replace('_', ' ')}</span>
+          <span className="capitalize">
+            {space.space_type.replace('_', ' ')}
+          </span>
         </div>
 
         <div className="pt-2 border-t border-border">
@@ -104,29 +115,50 @@ export function OwnerSpaceCard({ space, onDelete }: OwnerSpaceCardProps) {
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 pt-2">
-          <Link to={`/spaces/${space.id}`} className="flex-1">
-            <Button variant="outline" size="sm" className="w-full">
-              <Eye className="size-3.5" />
-              View
-            </Button>
-          </Link>
-
-          <Link to={`/owner/spaces/${space.id}/edit`} className="flex-1">
-            <Button variant="outline" size="sm" className="w-full">
-              <Edit className="size-3.5" />
-              Edit
-            </Button>
-          </Link>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleDelete}
-            className="text-error border-error/30 hover:bg-error/10"
+        <div className="space-y-2 pt-2">
+          {/* Availability link — Premium style */}
+          <Link
+            to={`/owner/spaces/${space.id}/availability`}
+            className="block"
           >
-            <Trash2 className="size-3.5" />
-          </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full justify-between border-primary/30 bg-gradient-to-r from-primary/5 to-secondary/5 hover:from-primary/10 hover:to-secondary/10 hover:border-primary/50 text-primary font-medium shadow-sm transition-all group/btn"
+            >
+              <span className="flex items-center gap-2">
+                <Clock className="size-3.5 transition-transform group-hover/btn:rotate-12" />
+                Manage Availability
+              </span>
+              <ArrowRight className="size-3.5 transition-transform group-hover/btn:translate-x-0.5" />
+            </Button>
+          </Link>
+
+          {/* Row: View / Edit / Delete */}
+          <div className="flex gap-2">
+            <Link to={`/spaces/${space.id}`} className="flex-1">
+              <Button variant="outline" size="sm" className="w-full">
+                <Eye className="size-3.5" />
+                View
+              </Button>
+            </Link>
+
+            <Link to={`/owner/spaces/${space.id}/edit`} className="flex-1">
+              <Button variant="outline" size="sm" className="w-full">
+                <Edit className="size-3.5" />
+                Edit
+              </Button>
+            </Link>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDelete}
+              className="text-error border-error/30 hover:bg-error/10"
+            >
+              <Trash2 className="size-3.5" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>
