@@ -9,6 +9,11 @@ import type {
   AvailabilityPayload,
   AvailabilityResponse,
   AvailabilityListResponse,
+  OwnerAnalyticsSummary,
+  OwnerAnalyticsRevenue,
+  OwnerAnalyticsTopSpaces,
+  OwnerAnalyticsPopularDays,
+  OwnerAnalyticsDistribution,
 } from '../types';
 export const ownerService = {
   // ============================================
@@ -150,6 +155,54 @@ export const ownerService = {
     await apiClient.delete(`/availability/${id}`);
   },
 
+  // ============================================
+  // ANALYTICS
+  // ============================================
+
+  async getAnalyticsSummary(): Promise<{ data: OwnerAnalyticsSummary }> {
+    const { data } = await apiClient.get<{ data: OwnerAnalyticsSummary }>(
+      '/owner/analytics/summary'
+    );
+    return data;
+  },
+
+  async getAnalyticsRevenue(
+    months = 6
+  ): Promise<{ data: OwnerAnalyticsRevenue }> {
+    const { data } = await apiClient.get<{ data: OwnerAnalyticsRevenue }>(
+      '/owner/analytics/revenue',
+      { params: { months } }
+    );
+    return data;
+  },
+
+  async getAnalyticsTopSpaces(
+    limit = 5
+  ): Promise<{ data: OwnerAnalyticsTopSpaces[] }> {
+    const { data } = await apiClient.get<{ data: OwnerAnalyticsTopSpaces[] }>(
+      '/owner/analytics/top-spaces',
+      { params: { limit } }
+    );
+    return data;
+  },
+
+  async getAnalyticsPopularDays(): Promise<{
+    data: OwnerAnalyticsPopularDays;
+  }> {
+    const { data } = await apiClient.get<{
+      data: OwnerAnalyticsPopularDays;
+    }>('/owner/analytics/popular-days');
+    return data;
+  },
+
+  async getAnalyticsDistribution(): Promise<{
+    data: OwnerAnalyticsDistribution;
+  }> {
+    const { data } = await apiClient.get<{
+      data: OwnerAnalyticsDistribution;
+    }>('/owner/analytics/distribution');
+    return data;
+  },
 };
 
 export type { Space };

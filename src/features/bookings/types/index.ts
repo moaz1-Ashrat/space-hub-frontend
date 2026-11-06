@@ -1,4 +1,4 @@
-export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
+﻿export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
 export type PaymentStatus = 'pending' | 'paid' | 'failed';
 
 export interface BookingSpace {
@@ -48,5 +48,6 @@ export interface CreateBookingPayload {
   space_id: number;
   start_datetime: string;
   end_datetime: string;
+  coupon_code?: string;
   coupon_id?: number;
 }

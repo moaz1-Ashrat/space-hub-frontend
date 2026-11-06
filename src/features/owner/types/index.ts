@@ -91,3 +91,44 @@ export const DAY_NAMES_SHORT = [
 ] as const;
 
 export type { Space };
+// ============================================
+// OWNER ANALYTICS
+// ============================================
+export interface OwnerAnalyticsSummary {
+  owner_id: number;
+  owner_name: string;
+  owner_email: string;
+  total_spaces: number;
+  total_bookings: number;
+  total_earnings: number;
+  avg_rating: number;
+}
+
+export interface OwnerAnalyticsRevenue {
+  labels: string[];
+  owner_payout: number[];
+  total_revenue: number[];
+  bookings_count: number[];
+}
+
+export interface OwnerAnalyticsTopSpaces {
+  space_id: number;
+  space_name: string;
+  space_type: string;
+  price_per_hour: number;
+  approval_status: string;
+  total_bookings: number;
+  total_revenue: number;
+  avg_rating: number;
+  total_reviews: number;
+}
+
+export interface OwnerAnalyticsPopularDays {
+  labels: string[];
+  counts: number[];
+}
+
+export interface OwnerAnalyticsDistribution {
+  labels: string[];
+  counts: number[];
+}

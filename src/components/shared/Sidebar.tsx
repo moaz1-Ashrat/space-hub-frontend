@@ -1,4 +1,4 @@
-// src/components/shared/Sidebar.tsx
+﻿// src/components/shared/Sidebar.tsx
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -14,6 +14,7 @@ import {
   Clock,
   Sparkles,
   Star,
+  Ticket,
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import type { UserRole } from '../../types';
@@ -22,10 +23,6 @@ interface NavLinkConfig {
   label: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
-  /**
-   * Custom matcher — لو موجود، يُستخدم بدل NavLink الافتراضي.
-   * يستقبل الـ current pathname ويرجع boolean.
-   */
   matcher?: (pathname: string) => boolean;
 }
 
@@ -41,6 +38,7 @@ const customerSections: SectionConfig[] = [
       { label: 'My Bookings', href: '/customer/bookings', icon: Calendar },
       { label: 'Payments', href: '/customer/payments', icon: CreditCard },
       { label: 'My Reviews', href: '/customer/reviews', icon: Star },
+      { label: 'My Coupons', href: '/customer/coupons', icon: Ticket },
     ],
   },
   {
@@ -53,17 +51,11 @@ const ownerSections: SectionConfig[] = [
   {
     title: 'Management',
     links: [
-      {
-        label: 'Overview',
-        href: '/owner',
-        icon: LayoutDashboard,
-        matcher: (p) => p === '/owner',
-      },
+      { label: 'Overview', href: '/owner', icon: LayoutDashboard, matcher: (p) => p === '/owner' },
       {
         label: 'My Spaces',
         href: '/owner/spaces',
         icon: Building2,
-        // ✅ لا يتطابق مع availability sub-routes
         matcher: (p) =>
           p === '/owner/spaces' ||
           p === '/owner/spaces/create' ||
@@ -73,7 +65,6 @@ const ownerSections: SectionConfig[] = [
         label: 'Availability',
         href: '/owner/availability',
         icon: Clock,
-        // ✅ يتطابق مع الـ overview + per-space availability
         matcher: (p) =>
           p === '/owner/availability' ||
           /^\/owner\/spaces\/\d+\/availability$/.test(p),
@@ -89,9 +80,10 @@ const adminSections: SectionConfig[] = [
     links: [
       { label: 'Dashboard', href: '/admin', icon: BarChart3 },
       { label: 'Users', href: '/admin/users', icon: Users },
-      { label: 'All Spaces', href: '/admin/spaces', icon: Building2 }, // ← جديد
+      { label: 'All Spaces', href: '/admin/spaces', icon: Building2 },
       { label: 'Pending Spaces', href: '/admin/spaces/pending', icon: Clock },
       { label: 'Transactions', href: '/admin/transactions', icon: CreditCard },
+      { label: 'Coupons', href: '/admin/coupons', icon: Ticket },
       { label: 'Analytics', href: '/admin/analytics', icon: Sparkles },
     ],
   },
@@ -155,11 +147,7 @@ export function Sidebar({ onLinkClick }: SidebarProps = {}) {
                       <motion.div
                         layoutId={`sidebar-active-${user.role}`}
                         className="absolute inset-y-1 start-0 w-0.5 bg-primary rounded-e-full"
-                        transition={{
-                          type: 'spring',
-                          stiffness: 380,
-                          damping: 30,
-                        }}
+                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                       />
                     )}
                     <link.icon className="size-4 shrink-0" />

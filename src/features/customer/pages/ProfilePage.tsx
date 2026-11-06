@@ -1,4 +1,5 @@
 // src/features/customer/pages/ProfilePage.tsx
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Calendar,
@@ -9,9 +10,13 @@ import {
   User as UserIcon,
   Sparkles,
   Info,
+  Edit,
+  KeyRound,
+  Ticket,
 } from 'lucide-react';
 
 import { useAuthStore } from '@/stores/authStore';
+import { Button } from '@/components/ui/button';
 import { staggerContainer, staggerItem, fadeUp } from '@/lib/animations';
 
 export function ProfilePage() {
@@ -82,6 +87,33 @@ export function ProfilePage() {
         </div>
       </motion.div>
 
+      {/* Action Buttons */}
+      <motion.div
+        variants={fadeUp}
+        initial="hidden"
+        animate="visible"
+        className="flex flex-wrap gap-3"
+      >
+        <Button asChild variant="outline">
+          <Link to="/customer/profile/edit">
+            <Edit className="size-4 me-2" />
+            Edit Profile
+          </Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link to="/customer/profile/password">
+            <KeyRound className="size-4 me-2" />
+            Change Password
+          </Link>
+        </Button>
+                <Button asChild variant="outline">
+          <Link to="/customer/coupons">
+            <Ticket className="size-4 me-2" />
+            My Coupons
+          </Link>
+        </Button>
+      </motion.div>
+
       {/* Contact Info */}
       <motion.div
         variants={staggerContainer}
@@ -99,27 +131,10 @@ export function ProfilePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[
-            {
-              icon: UserIcon,
-              label: 'Full Name',
-              value: user.name,
-            },
-            {
-              icon: Mail,
-              label: 'Email',
-              value: user.email,
-            },
-            {
-              icon: Phone,
-              label: 'Phone',
-              value: user.phone,
-              mono: true,
-            },
-            {
-              icon: Shield,
-              label: 'Account Type',
-              value: roleInfo.label,
-            },
+            { icon: UserIcon, label: 'Full Name', value: user.name },
+            { icon: Mail, label: 'Email', value: user.email },
+            { icon: Phone, label: 'Phone', value: user.phone, mono: true },
+            { icon: Shield, label: 'Account Type', value: roleInfo.label },
           ].map((item, i) => (
             <motion.div
               key={i}
@@ -220,10 +235,10 @@ export function ProfilePage() {
       >
         <Info className="size-4 text-info mt-0.5 shrink-0" />
         <div>
-          <p className="font-medium text-info">Profile Editing Coming Soon</p>
+          <p className="font-medium text-info">Profile Editing Available</p>
           <p className="text-muted-foreground mt-0.5">
-            You'll be able to edit your profile information, change your
-            password, and manage preferences in a future update.
+            You can now edit your profile information and change your password
+            using the buttons above.
           </p>
         </div>
       </motion.div>

@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom';
+﻿import { createBrowserRouter } from 'react-router-dom';
 import { PublicLayout } from '../../components/layouts/PublicLayout';
 import { AuthLayout } from '../../components/layouts/AuthLayout';
 import { DashboardLayout } from '../../components/layouts/DashboardLayout';
@@ -11,6 +11,8 @@ import { RegisterCustomerPage } from '../../features/auth/pages/RegisterCustomer
 import { RegisterOwnerPage } from '../../features/auth/pages/RegisterOwnerPage';
 import { ForgotPasswordPage } from '../../features/auth/pages/ForgotPasswordPage';
 import { ResetPasswordPage } from '../../features/auth/pages/ResetPasswordPage';
+import { ProfileEditPage } from '../../features/auth/pages/ProfileEditPage';
+import { ChangePasswordPage } from '../../features/auth/pages/ChangePasswordPage';
 
 // Public
 import { HomePage } from '../../features/home/pages/HomePage';
@@ -28,6 +30,7 @@ import { CheckoutPage } from '../../features/bookings/pages/CheckoutPage';
 import { PaymentsPage } from '../../features/payments/pages/PaymentsPage';
 import { MyReviewsPage } from '../../features/reviews/pages/MyReviewsPage';
 import { ProfilePage } from '../../features/customer/pages/ProfilePage';
+import { MyCouponsPage } from '../../features/coupons/pages/MyCouponsPage';
 
 // Owner
 import { OwnerOverviewPage } from '../../features/owner/pages/OwnerOverviewPage';
@@ -48,9 +51,9 @@ import { AdminAnalyticsPage } from '../../features/admin/pages/AdminAnalyticsPag
 import { AdminSettingsPage } from '../../features/admin/pages/AdminSettingsPage';
 import { AdminAllSpacesPage } from '../../features/admin/pages/AdminAllSpacesPage';
 import { AdminUserDetailPage } from '../../features/admin/pages/AdminUserDetailPage';
+import { AdminCouponsPage } from '../../features/admin/pages/AdminCouponsPage';
 
 export const router = createBrowserRouter([
-  // Public
   {
     path: '/',
     element: <PublicLayout />,
@@ -62,8 +65,6 @@ export const router = createBrowserRouter([
       { path: 'contact', element: <ContactPage /> },
     ],
   },
-
-  // Auth
   {
     element: <AuthLayout />,
     children: [
@@ -74,8 +75,6 @@ export const router = createBrowserRouter([
       { path: '/reset-password', element: <ResetPasswordPage /> },
     ],
   },
-
-  // Customer
   {
     element: <ProtectedRoute />,
     children: [
@@ -91,15 +90,16 @@ export const router = createBrowserRouter([
               { path: '/customer/bookings/:id/checkout', element: <CheckoutPage /> },
               { path: '/customer/payments', element: <PaymentsPage /> },
               { path: '/customer/reviews', element: <MyReviewsPage /> },
+              { path: '/customer/coupons', element: <MyCouponsPage /> },
               { path: '/customer/profile', element: <ProfilePage /> },
+              { path: '/customer/profile/edit', element: <ProfileEditPage /> },
+              { path: '/customer/profile/password', element: <ChangePasswordPage /> },
             ],
           },
         ],
       },
     ],
   },
-
-  // Owner
   {
     element: <ProtectedRoute />,
     children: [
@@ -113,10 +113,7 @@ export const router = createBrowserRouter([
               { path: '/owner/spaces', element: <MySpacesPage /> },
               { path: '/owner/spaces/create', element: <CreateSpacePage /> },
               { path: '/owner/spaces/:id/edit', element: <EditSpacePage /> },
-              {
-                path: '/owner/spaces/:id/availability',
-                element: <SpaceAvailabilityPage />,
-              },
+              { path: '/owner/spaces/:id/availability', element: <SpaceAvailabilityPage /> },
               { path: '/owner/availability', element: <AvailabilityOverviewPage /> },
               { path: '/owner/bookings', element: <OwnerBookingsPage /> },
               { path: '/owner/earnings', element: <EarningsPage /> },
@@ -126,8 +123,6 @@ export const router = createBrowserRouter([
       },
     ],
   },
-
-  // Admin
   {
     element: <ProtectedRoute />,
     children: [
@@ -139,21 +134,18 @@ export const router = createBrowserRouter([
             children: [
               { path: '/admin', element: <AdminDashboardPage /> },
               { path: '/admin/users', element: <AdminUsersPage /> },
+              { path: '/admin/users/:id', element: <AdminUserDetailPage /> },
+              { path: '/admin/spaces', element: <AdminAllSpacesPage /> },
               { path: '/admin/spaces/pending', element: <AdminPendingSpacesPage /> },
               { path: '/admin/transactions', element: <AdminTransactionsPage /> },
+              { path: '/admin/coupons', element: <AdminCouponsPage /> },
               { path: '/admin/analytics', element: <AdminAnalyticsPage /> },
               { path: '/admin/settings', element: <AdminSettingsPage /> },
-               { path: '/admin/users', element: <AdminUsersPage /> },
-{ path: '/admin/users/:id', element: <AdminUserDetailPage /> },
-{ path: '/admin/spaces', element: <AdminAllSpacesPage /> },
-{ path: '/admin/spaces/pending', element: <AdminPendingSpacesPage /> },
-
             ],
           },
         ],
       },
     ],
   },
-
   { path: '*', element: <NotFoundPage /> },
 ]);
