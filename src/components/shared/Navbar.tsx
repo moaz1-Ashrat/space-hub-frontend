@@ -55,7 +55,9 @@ export function Navbar({ onMenuClick }: NavbarProps) {
   const handleLogout = async () => {
     try {
       await apiClient.post('/auth/logout');
-    } catch {}
+    } catch {
+      // Local logout still proceeds when the API request fails.
+    }
     clearAuth();
     navigate('/login');
   };

@@ -9,9 +9,15 @@ export type UserRole = 'customer' | 'space_owner' | 'admin';
 export interface User {
   id: number;
   name: string;
+  first_name: string;
+  last_name: string;
   email: string;
-  role: UserRole;
   phone: string;
+  role: UserRole;
+  gender?: 'male' | 'female';
+  is_active?: boolean;
+  avatar_url?: string | null;
+  created_at?: string;
 }
 
 export interface CustomerProfile {

@@ -28,9 +28,9 @@ export interface SpaceFormData {
   feature_ids: number[];
 }
 
-export interface CreateSpacePayload extends SpaceFormData {}
+export type CreateSpacePayload = SpaceFormData;
 
-export interface UpdateSpacePayload extends Partial<SpaceFormData> {}
+export type UpdateSpacePayload = Partial<SpaceFormData>;
 
 export interface OwnerSpaceResponse {
   data: Space;

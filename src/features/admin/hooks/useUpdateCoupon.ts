@@ -2,6 +2,7 @@
 import { toast } from 'sonner';
 import { adminService } from '../services/adminService';
 import type { UpdateCouponPayload } from '../types';
+import { getErrorMessage } from '@/lib/errors';
 
 export function useUpdateCoupon() {
   const qc = useQueryClient();
@@ -13,8 +14,8 @@ export function useUpdateCoupon() {
       qc.invalidateQueries({ queryKey: ['admin', 'coupons'] });
       toast.success('Coupon updated successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to update coupon');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error) || 'Failed to update coupon');
     },
   });
 }

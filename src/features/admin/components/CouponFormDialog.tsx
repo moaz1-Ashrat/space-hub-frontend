@@ -26,7 +26,8 @@ const schema = z.object({
   is_used: z.boolean().default(false),
 });
 
-type FormData = z.infer<typeof schema>;
+type FormInput = z.input<typeof schema>;
+type FormData = z.output<typeof schema>;
 
 interface CouponFormDialogProps {
   open: boolean;
@@ -41,7 +42,7 @@ export function CouponFormDialog({
 }: CouponFormDialogProps) {
   const isEdit = !!coupon;
 
-  const form = useForm<FormData>({
+  const form = useForm<FormInput, unknown, FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       code: '', user_id: null, discount_value: 10,
@@ -73,7 +74,6 @@ export function CouponFormDialog({
       discount_value: data.discount_value,
       commission_rate: data.commission_rate,
       expiry_date: data.expiry_date || null,
-      is_used: data.is_used,
     });
   };
 
@@ -121,7 +121,12 @@ export function CouponFormDialog({
               <FormField control={form.control} name="discount_value" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Discount (EGP)</FormLabel>
-                  <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
+                  <FormControl>                  <Input
+                    type="number"
+                    step="0.01"
+                    {...field}
+                    value={field.value == null ? '' : String(field.value)}
+                  /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -130,7 +135,9 @@ export function CouponFormDialog({
                   <FormLabel>Commission Rate</FormLabel>
                   <FormControl>
                     <Input type="number" step="0.01" placeholder="0.10"
-                      {...field} value={field.value ?? ''} />
+                      {...field}
+                      value={field.value == null ? '' : String(field.value)}
+                    />
                   </FormControl>
                   <FormDescription>0.10 = 10%</FormDescription>
                   <FormMessage />

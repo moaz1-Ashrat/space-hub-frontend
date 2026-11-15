@@ -1,7 +1,7 @@
 // src/features/owner/pages/OwnerBookingsPage.tsx
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { AlertCircle, Calendar, CheckCircle2, Search } from 'lucide-react';
+import { AlertCircle, Calendar, Search } from 'lucide-react';
 
 import { useOwnerBookings } from '../hooks/useOwnerBookings';
 import { useConfirmBooking } from '../hooks/useConfirmBooking';

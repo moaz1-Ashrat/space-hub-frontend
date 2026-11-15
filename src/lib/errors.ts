@@ -10,6 +10,10 @@ export function getErrorMessage(error: unknown): string {
 
     // 422 Validation errors
     if (error.response?.status === 422 && data?.errors) {
+      const fieldMessages = Object.values(data.errors).flat();
+      if (fieldMessages.length > 0) {
+        return fieldMessages.join(' ');
+      }
       return data.message || 'Validation failed';
     }
 

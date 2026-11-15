@@ -19,11 +19,21 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 
+type RegisterOwnerFormData = {
+  first_name: string;
+  last_name: string;
+  email: string;
+  password: string;
+  phone: string;
+  gender: 'male' | 'female';
+  tax_registration_number: string;
+};
+
 export function RegisterOwnerPage() {
   const { t } = useTranslation();
   const { registerOwner } = useAuth();
 
-  const form = useForm({
+  const form = useForm<RegisterOwnerFormData>({
     resolver: zodResolver(
       z.object({
         first_name: z.string().min(1, t('validation.required')).max(50),
@@ -49,7 +59,7 @@ export function RegisterOwnerPage() {
     },
   });
 
-  const onSubmit = (values: any) => {
+  const onSubmit = (values: RegisterOwnerFormData) => {
     registerOwner.mutate(values);
   };
 

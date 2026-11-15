@@ -1,173 +1,129 @@
-// src/features/spaces/pages/SpacesListPage.tsx
 import { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { ArrowLeft, AlertCircle } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
-
-import { useSpaces } from '../hooks/useSpaces';
+import { useQuery } from '@tanstack/react-query';
+import apiClient from '@/lib/axios';
+import { ArrowLeft, Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { WeekdayAvailabilityBar } from '@/features/home/components/WeekdayAvailabilityBar';
 import { SpaceCard } from '../components/SpaceCard';
 import { SpaceCardSkeleton } from '../components/SpaceCardSkeleton';
-import { SpaceFilters } from '../components/SpaceFilters';
-import { EmptySpaces } from '../components/EmptySpaces';
-import { Button } from '@/components/ui/button';
-import { useAuthStore } from '@/stores/authStore';
-import type { SpaceFilters as Filters } from '../types';
-import { staggerContainer, staggerItem } from '@/lib/animations';
+import type { Space, PaginatedSpaces } from '../types';
+type SpaceWithAvailability = Space & {
+  availabilities?: Array<{ day_of_week: number }>;
+};
 
 export function SpacesListPage() {
-  const { t } = useTranslation();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const user = useAuthStore((s) => s.user);
+  const [searchParams] = useSearchParams();
+  const selectedDay = searchParams.get('day');
 
-  const dashboardPath = () => {
-    if (!user) return '/';
-    if (user.role === 'admin') return '/admin';
-    if (user.role === 'space_owner') return '/owner';
-    return '/customer';
-  };
-
-  const [filters, setFilters] = useState<Filters>(() => {
-    const obj: Filters = {};
-    const type = searchParams.get('type');
-    const location = searchParams.get('location');
-    if (type) obj.type = type;
-    if (location) obj.location = location;
-    return obj;
+  const [filters, setFilters] = useState({
+    location: '',
+    type: '',
+    min_price: '',
+    max_price: '',
+    capacity: ''
   });
-  const [page, setPage] = useState(1);
 
-  const { data, isLoading, isError } = useSpaces({ ...filters, page });
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['spaces', filters],
+    queryFn: async () => {
+      // التعديل هنا: إضافة /v1
+      const { data } = await apiClient.get<PaginatedSpaces>('/spaces', { params: filters });
+      return data;
+    }
+  });
 
-  const handleFilter = (newFilters: Filters) => {
-    setFilters(newFilters);
-    setPage(1);
+  const filteredSpaces = data?.data?.filter((space: SpaceWithAvailability) => {
+    if (selectedDay === null) return true;
+    return space.availabilities?.some((a) => Number(a.day_of_week) === Number(selectedDay));
+  }) || [];
 
-    const params = new URLSearchParams();
-    Object.entries(newFilters).forEach(([k, v]) => {
-      if (v) params.set(k, String(v));
-    });
-    setSearchParams(params);
-  };
-
-  // ✅ الدالة الجديدة لمسح الفلاتر
-  const handleClearFilters = () => {
-    setFilters({});
-    setPage(1);
-    setSearchParams({});
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
   return (
-    <div className="container mx-auto py-8">
-      {/* Back to Dashboard */}
-      {isAuthenticated && user && (
-        <Link
-          to={dashboardPath()}
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary mb-4 transition-colors"
-        >
-          <ArrowLeft className="size-4" />
-          Back to Dashboard
-        </Link>
-      )}
+    <div className="min-h-screen bg-background pt-8 pb-20">
+      <div className="container mx-auto px-4 max-w-7xl">
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-heading font-bold">Explore Spaces</h1>
-        <p className="text-muted-foreground mt-1">
-          Find the perfect space for your needs
-        </p>
-      </div>
+        {/* Header */}
+        <div className="mb-8">
+          <Link to="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-4">
+            <ArrowLeft className="size-4 me-2" /> Back to Dashboard
+          </Link>
+          <h1 className="text-3xl font-heading font-bold">Explore Spaces</h1>
+          <p className="text-muted-foreground mt-1">Find the perfect space for your needs</p>
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <aside className="lg:col-span-1">
-          <SpaceFilters onFilter={handleFilter} initialFilters={filters} />
-        </aside>
+        {/* Weekday Availability Bar */}
+        <WeekdayAvailabilityBar />
 
-        <div className="lg:col-span-3">
-          {/* Loading */}
-          {isLoading && (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <SpaceCardSkeleton key={i} />
-              ))}
-            </div>
-          )}
-
-          {/* Error */}
-          {isError && (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-8 text-center bg-destructive/5 border border-destructive/20 rounded-xl"
-            >
-              <div className="w-14 h-14 mx-auto rounded-full bg-destructive/10 flex items-center justify-center mb-4">
-                <AlertCircle className="size-7 text-destructive" />
-              </div>
-              <p className="text-lg font-medium text-destructive">
-                {t('spaces.error.title', 'Failed to load spaces')}
-              </p>
-              <p className="text-sm text-muted-foreground mt-1 mb-4">
-                {t(
-                  'spaces.error.description',
-                  'Something went wrong. Please try again.'
-                )}
-              </p>
-              <Button
-                variant="outline"
-                onClick={() => window.location.reload()}
-              >
-                {t('common.retry', 'Try Again')}
-              </Button>
-            </motion.div>
-          )}
-
-          {/* Empty - ✅ مع handleClearFilters */}
-          {data && data.data.length === 0 && (
-            <EmptySpaces
-              variant="search"
-              onClearFilters={handleClearFilters}
-            />
-          )}
-
-          {/* Data */}
-          {data && data.data.length > 0 && (
-            <>
-              <motion.div
-                variants={staggerContainer}
-                initial="hidden"
-                animate="visible"
-                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
-              >
-                {data.data.map((space) => (
-                  <motion.div key={space.id} variants={staggerItem}>
-                    <SpaceCard space={space} />
-                  </motion.div>
-                ))}
-              </motion.div>
-
-              {data.meta.last_page > 1 && (
-                <div className="flex items-center justify-center gap-3 mt-8">
-                  <Button
-                    variant="outline"
-                    disabled={!data.links.prev}
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  >
-                    Previous
-                  </Button>
-                  <span className="text-sm text-muted-foreground">
-                    Page {data.meta.current_page} of {data.meta.last_page}
-                  </span>
-                  <Button
-                    variant="outline"
-                    disabled={!data.links.next}
-                    onClick={() => setPage((p) => p + 1)}
-                  >
-                    Next
-                  </Button>
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Sidebar Filters */}
+          <div className="w-full lg:w-1/4 shrink-0">
+            <div className="bg-card border border-border rounded-xl p-5 sticky top-24">
+              <h2 className="font-semibold mb-4">Filters</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Location</label>
+                  <Input name="location" placeholder="City, area..." value={filters.location} onChange={handleFilterChange} />
                 </div>
-              )}
-            </>
-          )}
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Type</label>
+                  <select name="type" value={filters.type} onChange={handleFilterChange} className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm">
+                    <option value="">Any type</option>
+                    <option value="coworking">Coworking</option>
+                    <option value="event_hall">Event Hall</option>
+                    <option value="studio">Studio</option>
+                    <option value="entertainment">Entertainment</option>
+                    <option value="office">Office</option>
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Min price</label>
+                    <Input name="min_price" type="number" placeholder="0" value={filters.min_price} onChange={handleFilterChange} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Max price</label>
+                    <Input name="max_price" type="number" placeholder="∞" value={filters.max_price} onChange={handleFilterChange} />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Min capacity</label>
+                  <Input name="capacity" type="number" placeholder="Any" value={filters.capacity} onChange={handleFilterChange} />
+                </div>
+                <Button className="w-full" onClick={() => {}}>
+                  <Search className="size-4 me-2" /> Search
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Grid Area */}
+          <div className="w-full lg:w-3/4">
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <SpaceCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : isError ? (
+              <div className="text-center py-20 text-destructive">Failed to load spaces.</div>
+            ) : filteredSpaces.length === 0 ? (
+              <div className="text-center py-20 bg-card rounded-xl border border-border">
+                <p className="text-lg text-muted-foreground">No spaces found matching your criteria.</p>
+                {selectedDay && <p className="text-sm text-muted-foreground mt-2">Try clearing the day filter.</p>}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {filteredSpaces.map((space: SpaceWithAvailability) => (
+                  <SpaceCard key={space.id} space={space} />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

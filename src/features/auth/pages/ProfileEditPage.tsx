@@ -31,13 +31,14 @@ const schema = z.object({
   phone: z.string().min(1, 'Required').max(15),
   gender: z.enum(['male', 'female']),
 });
+type ProfileFormData = z.infer<typeof schema>;
 
 export function ProfileEditPage() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const updateMutation = useUpdateProfile();
 
-  const form = useForm({
+  const form = useForm<ProfileFormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       first_name: user?.first_name ?? '',
@@ -47,7 +48,7 @@ export function ProfileEditPage() {
     },
   });
 
-  const onSubmit = async (values: any) => {
+  const onSubmit = async (values: ProfileFormData) => {
     try {
       await updateMutation.mutateAsync(values);
       toast.success('Profile updated successfully.');

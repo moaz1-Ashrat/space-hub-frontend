@@ -19,11 +19,21 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 
+type RegisterCustomerFormData = {
+  first_name: string;
+  last_name: string;
+  email: string;
+  password: string;
+  phone: string;
+  gender: 'male' | 'female';
+  favorite?: string;
+};
+
 export function RegisterCustomerPage() {
   const { t } = useTranslation();
   const { registerCustomer } = useAuth();
 
-  const form = useForm({
+  const form = useForm<RegisterCustomerFormData>({
     resolver: zodResolver(
       z.object({
         first_name: z.string().min(1, t('validation.required')).max(50),
@@ -46,7 +56,7 @@ export function RegisterCustomerPage() {
     },
   });
 
-  const onSubmit = (values: any) => {
+  const onSubmit = (values: RegisterCustomerFormData) => {
     registerCustomer.mutate(values);
   };
 

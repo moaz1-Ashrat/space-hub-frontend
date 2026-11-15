@@ -1,21 +1,17 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { paymentService } from '../services/paymentService';
 import { getErrorMessage } from '@/lib/errors';
-import type { CheckoutPayload } from '../types';
 
 export function useCheckout() {
-  const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: (payload: CheckoutPayload) => paymentService.checkout(payload),
-    onSuccess: () => {
-      toast.success('Payment completed successfully');
-      queryClient.invalidateQueries({ queryKey: ['bookings'] });
-      queryClient.invalidateQueries({ queryKey: ['payments'] });
+    mutationFn: (paymentId: number) => paymentService.initiateKashier(paymentId),
+    onSuccess: (data) => {
+      // توجيه المستخدم لصفحة الدفع الحقيقية في Kashier
+      window.location.href = data.url;
     },
-    onError: (error) => {
-      toast.error(getErrorMessage(error));
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error) || 'Failed to initiate payment.');
     },
   });
 }

@@ -1,5 +1,5 @@
 // src/features/spaces/components/AvailabilityPreview.tsx
-import { Calendar, Clock, Info, CheckCircle2 } from 'lucide-react';
+import { Calendar, Clock, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { DAY_NAMES, type Availability } from '@/features/owner/types';
 

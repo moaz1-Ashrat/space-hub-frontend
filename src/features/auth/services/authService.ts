@@ -63,7 +63,7 @@ export const authService = {
    * TODO: Forgot Password — Backend endpoint not implemented yet
    * POST /auth/forgot-password
    */
-  async forgotPassword(_email: string): Promise<void> {
+  async forgotPassword(): Promise<void> {
     // TODO: Wire to backend when endpoint exists
     throw new Error(
       'Forgot password endpoint is not implemented on the backend yet.'
@@ -74,12 +74,7 @@ export const authService = {
    * TODO: Reset Password — Backend endpoint not implemented yet
    * POST /auth/reset-password
    */
-  async resetPassword(_payload: {
-    token: string;
-    email: string;
-    password: string;
-    password_confirmation: string;
-  }): Promise<void> {
+  async resetPassword(): Promise<void> {
     // TODO: Wire to backend when endpoint exists
     throw new Error(
       'Reset password endpoint is not implemented on the backend yet.'

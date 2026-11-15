@@ -1,15 +1,16 @@
-// src/features/bookings/pages/BookingDetailPage.tsx
+﻿// src/features/bookings/pages/BookingDetailPage.tsx
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { paymentService } from '@/features/payments/services/paymentService';
 import {
-  AlertCircle,
+   AlertCircle,
   ArrowLeft,
   Calendar,
   Clock,
   CreditCard,
-  MapPin,
   XCircle,
   CheckCircle2,
+  FileText
 } from 'lucide-react';
 
 import { useBooking } from '../hooks/useBooking';
@@ -364,6 +365,19 @@ export function BookingDetailPage() {
           )}
         </div>
       </motion.div>
-    </motion.div>
+          {/* Invoice Download Button */}
+      {booking.payment && booking.payment.payment_status === 'paid' && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4">
+          <Button
+            variant="default"
+            className="w-full flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+            onClick={() => paymentService.downloadInvoice(booking.payment!.id)}
+          >
+            <FileText className="size-4" />
+            View / Print Invoice (PDF)
+          </Button>
+        </motion.div>
+      )}
+</motion.div>
   );
 }

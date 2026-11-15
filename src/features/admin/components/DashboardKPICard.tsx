@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 
-interface DashboardKPICardProps {
+export interface DashboardKPICardProps {
   title: string;
   value: number | string;
   icon: LucideIcon;

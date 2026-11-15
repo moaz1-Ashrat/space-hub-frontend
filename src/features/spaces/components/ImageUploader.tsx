@@ -7,7 +7,6 @@ import {
   Loader2,
   AlertCircle,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useUploadImage } from '../hooks/useUploadImage';
 import { useDeleteImage } from '../hooks/useDeleteImage';
 import { useSetPrimaryImage } from '../hooks/useSetPrimaryImage';

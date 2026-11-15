@@ -23,6 +23,8 @@ import type {
   CouponFilters,
   CreateCouponPayload,
   UpdateCouponPayload,
+  AnalyticsDemographics,
+  AnalyticsCoupons,
 } from '../types';
 
 export const adminService = {

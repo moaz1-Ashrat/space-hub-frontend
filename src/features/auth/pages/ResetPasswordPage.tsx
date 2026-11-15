@@ -16,6 +16,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useResetPassword } from '../hooks/useResetPassword';
+import { getErrorMessage } from '@/lib/errors';
 
 const schema = z
   .object({
@@ -26,6 +27,7 @@ const schema = z
     message: 'Passwords do not match',
     path: ['password_confirmation'],
   });
+type ResetPasswordFormData = z.infer<typeof schema>;
 
 export function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -35,12 +37,12 @@ export function ResetPasswordPage() {
 
   const resetMutation = useResetPassword();
 
-  const form = useForm({
+  const form = useForm<ResetPasswordFormData>({
     resolver: zodResolver(schema),
     defaultValues: { password: '', password_confirmation: '' },
   });
 
-  const onSubmit = async (values: { password: string; password_confirmation: string }) => {
+  const onSubmit = async (values: ResetPasswordFormData) => {
     if (!token || !email) {
       toast.error('Invalid reset link.');
       return;
@@ -55,8 +57,8 @@ export function ResetPasswordPage() {
       });
       toast.success('Password reset successfully. Please login.');
       navigate('/login');
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Reset failed.');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error) || 'Reset failed.');
     }
   };
 

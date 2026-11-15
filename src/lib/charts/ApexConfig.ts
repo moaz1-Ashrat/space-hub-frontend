@@ -90,7 +90,7 @@ export function getBaseOptions(): ApexOptions {
       labels: { style: { colors: mutedColor, fontSize: '11px' } },
     },
     // RTL handled per-chart if needed
-    ...(isRtl ? { chart: { ...({} as any) } } : {}),
+    ...(isRtl ? { chart: {} } : {}),
   } as ApexOptions;
 }
 

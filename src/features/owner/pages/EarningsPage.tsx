@@ -2,8 +2,6 @@
 import { motion } from 'framer-motion';
 import {
   DollarSign,
-  TrendingUp,
-  Percent,
   Wallet,
   AlertCircle,
   Receipt,

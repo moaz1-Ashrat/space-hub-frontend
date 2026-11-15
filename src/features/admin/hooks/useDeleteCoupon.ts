@@ -1,6 +1,7 @@
 ﻿import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { adminService } from '../services/adminService';
+import { getErrorMessage } from '@/lib/errors';
 
 export function useDeleteCoupon() {
   const qc = useQueryClient();
@@ -11,8 +12,8 @@ export function useDeleteCoupon() {
       qc.invalidateQueries({ queryKey: ['admin', 'coupons'] });
       toast.success('Coupon deleted successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to delete coupon');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error) || 'Failed to delete coupon');
     },
   });
 }

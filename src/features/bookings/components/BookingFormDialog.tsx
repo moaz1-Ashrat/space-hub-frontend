@@ -1,24 +1,23 @@
-﻿// src/features/bookings/components/BookingFormDialog.tsx
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import {
-  Calendar, Clock, Loader2, AlertCircle, CheckCircle2, XCircle, Info, Ticket,
-} from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import apiClient from '@/lib/axios';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
-} from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 import { useCreateBooking } from '../hooks/useCreateBooking';
 import { useSpaceAvailability } from '@/features/spaces/hooks/useSpaceAvailability';
 import { DAY_NAMES } from '@/features/owner/types';
 import { CouponInput } from '@/features/coupons/components/CouponInput';
 import type { Coupon } from '@/features/coupons/types';
+import type { CreateBookingPayload } from '../types';
+import { getErrorMessage } from '@/lib/errors';
 
 interface BookingFormDialogProps {
   spaceId: number;
@@ -45,20 +44,30 @@ const bookingSchema = z
 
 type BookingFormData = z.infer<typeof bookingSchema>;
 
-export function BookingFormDialog({
-  spaceId, spaceName, pricePerHour, isOpen, onClose,
-}: BookingFormDialogProps) {
+export function BookingFormDialog({ spaceId, spaceName, pricePerHour, isOpen, onClose }: BookingFormDialogProps) {
   const navigate = useNavigate();
   const createBooking = useCreateBooking();
+  
+  // استخدام useRef عشان نمنع الـ Infinite Loop
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [isThirdParty, setIsThirdParty] = useState(false);
+  const [guestName, setGuestName] = useState('');
+  const [guestEmail, setGuestEmail] = useState('');
+  const [guestPhone, setGuestPhone] = useState('');
+  const [submitError, setSubmitError] = useState('');
 
-  const { data: availabilityData, isLoading: loadingAvailability } =
-    useSpaceAvailability(spaceId);
+  // 1. Fetch Availability
+  const { data: availabilityData, isLoading: loadingAvailability } = useSpaceAvailability(spaceId);
   const availability = availabilityData?.data ?? [];
   const activeSlots = availability.filter((a) => a.is_available);
 
+  // 2. Setup Date
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const defaultDate = tomorrow.toISOString().split('T')[0];
@@ -72,130 +81,125 @@ export function BookingFormDialog({
   const startTime = form.watch('startTime');
   const endTime = form.watch('endTime');
 
-  const selectedDay = useMemo(() => {
-    if (!date) return null;
-    return new Date(date + 'T00:00:00').getDay();
-  }, [date]);
+  // 3. Fetch Fully Booked Dates
+  const selectedMonth = date ? date.substring(0, 7) : defaultDate.substring(0, 7);
+  const { data: fullyBookedData } = useQuery({
+    queryKey: ['fully-booked-dates', spaceId, selectedMonth],
+    queryFn: async () => {
+      const { data } = await apiClient.get<{
+        data?: { fully_booked_dates?: string[] };
+      }>('/calendar/fully-booked-dates', {
+        params: { month: selectedMonth, space_id: spaceId } 
+      });
+      return data.data?.fully_booked_dates ?? [];
+    },
+    enabled: isOpen && !!date,
+  });
 
-  const slotsForDay = useMemo(() => {
-    if (selectedDay === null) return [];
-    return activeSlots.filter((a) => a.day_of_week === selectedDay);
-  }, [activeSlots, selectedDay]);
+  const fullyBookedDates: string[] = useMemo(() => {
+    if (!fullyBookedData) return [];
+    if (Array.isArray(fullyBookedData)) {
+      return fullyBookedData.flatMap((entry: unknown) => {
+        if (typeof entry === 'string') return [entry];
+        if (
+          typeof entry === 'object' &&
+          entry !== null &&
+          'date' in entry &&
+          typeof entry.date === 'string'
+        ) {
+          return [entry.date];
+        }
+        return [];
+      });
+    }
+    return [];
+  }, [fullyBookedData]);
 
-  const isDayAvailable = slotsForDay.length > 0;
+  const isSelectedDateFullyBooked = Array.isArray(fullyBookedDates) && fullyBookedDates.includes(date);
+
+  // 4. Day Logic
+  const selectedDay = useMemo(() => (date ? new Date(date + 'T00:00:00').getDay() : null), [date]);
+  const slotsForDay = useMemo(() => selectedDay === null ? [] : activeSlots.filter((a) => a.day_of_week === selectedDay), [activeSlots, selectedDay]);
+  const isDayAvailable = slotsForDay.length > 0 && !isSelectedDateFullyBooked;
 
   const timeRange = useMemo(() => {
     if (slotsForDay.length === 0) return null;
-    const minStart = slotsForDay.reduce((min, s) =>
-      s.start_time < min ? s.start_time : min, slotsForDay[0].start_time);
-    const maxEnd = slotsForDay.reduce((max, s) =>
-      s.end_time > max ? s.end_time : max, slotsForDay[0].end_time);
+    const minStart = slotsForDay.reduce((min, s) => s.start_time < min ? s.start_time : min, slotsForDay[0].start_time);
+    const maxEnd = slotsForDay.reduce((max, s) => s.end_time > max ? s.end_time : max, slotsForDay[0].end_time);
     return { minStart: minStart.slice(0, 5), maxEnd: maxEnd.slice(0, 5) };
   }, [slotsForDay]);
 
   const timeValidation = useMemo(() => {
     if (!isDayAvailable || !startTime || !endTime) return { valid: false, message: '' };
-    const start = startTime + ':00';
-    const end = endTime + ':00';
+    const start = startTime + ':00'; const end = endTime + ':00';
     const fits = slotsForDay.some((s) => start >= s.start_time && end <= s.end_time);
-    if (!fits) {
-      return {
-        valid: false,
-        message: `Selected time is outside available hours (${slotsForDay
-          .map((s) => `${s.start_time.slice(0, 5)}-${s.end_time.slice(0, 5)}`)
-          .join(', ')})`,
-      };
-    }
+    if (!fits) return { valid: false, message: `Selected time is outside available hours.` };
     return { valid: true, message: '' };
   }, [slotsForDay, isDayAvailable, startTime, endTime]);
 
+  // 5. Effects
   useEffect(() => {
     if (!isOpen) return;
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !createBooking.isPending) onClose();
+    const handleEscape = (e: KeyboardEvent) => { 
+      if (e.key === 'Escape' && !createBooking.isPending) onCloseRef.current(); 
     };
     document.addEventListener('keydown', handleEscape);
     document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = '';
+    return () => { 
+      document.removeEventListener('keydown', handleEscape); 
+      document.body.style.overflow = ''; 
     };
-  }, [isOpen, onClose, createBooking.isPending]);
+  }, [isOpen, createBooking.isPending]); // شيلنا onClose من هنا عشان نمنع الـ loop
 
   useEffect(() => {
     if (isOpen) {
-      setCouponCode('');
-      setAppliedCoupon(null);
-      if (isDayAvailable && timeRange) {
-        form.reset({
-          date: defaultDate,
-          startTime: timeRange.minStart,
-          endTime: timeRange.maxEnd,
-        });
-      }
+      setCouponCode(''); setAppliedCoupon(null); setIsThirdParty(false); setGuestName(''); setGuestEmail(''); setGuestPhone(''); setSubmitError('');
+      if (isDayAvailable && timeRange) form.reset({ date: defaultDate, startTime: timeRange.minStart, endTime: timeRange.maxEnd });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  }, [isOpen]); // بنعمل reset بس لما يتفتح
 
-  useEffect(() => {
-    if (isDayAvailable && timeRange && isOpen) {
-      const currentStart = form.getValues('startTime');
-      if (currentStart < timeRange.minStart || currentStart > timeRange.maxEnd) {
-        form.setValue('startTime', timeRange.minStart);
-        form.setValue('endTime', timeRange.maxEnd);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDay, isDayAvailable]);
-
-  let duration = 0;
-  let subtotal = 0;
-  try {
-    if (date && startTime && endTime) {
-      const start = new Date(`${date}T${startTime}`);
-      const end = new Date(`${date}T${endTime}`);
-      const hours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
-      if (hours > 0) { duration = hours; subtotal = hours * pricePerHour; }
-    }
-  } catch {}
+  let duration = 0; let subtotal = 0;
+  if (date && startTime && endTime) {
+    const hours = (new Date(`${date}T${endTime}`).getTime() - new Date(`${date}T${startTime}`).getTime()) / (1000 * 60 * 60);
+    if (hours > 0) { duration = hours; subtotal = hours * pricePerHour; }
+  }
 
   const discount = appliedCoupon?.discount_value ?? 0;
   const finalTotal = Math.max(subtotal - discount, 0);
 
   const onSubmit = async (data: BookingFormData) => {
-    const startDateTime = `${data.date} ${data.startTime}:00`;
-    const endDateTime = `${data.date} ${data.endTime}:00`;
+    const start = new Date(`${data.date}T${data.startTime}`);
+    if (start <= new Date()) {
+      setSubmitError('Booking must start in the future. Please choose another time.');
+      return;
+    }
 
-    const payload: any = {
-      space_id: spaceId,
-      start_datetime: startDateTime,
-      end_datetime: endDateTime,
-    };
+    setSubmitError('');
+    const payload: CreateBookingPayload = { space_id: spaceId, start_datetime: `${data.date} ${data.startTime}:00`, end_datetime: `${data.date} ${data.endTime}:00` };
     if (appliedCoupon) payload.coupon_code = appliedCoupon.code;
+    if (isThirdParty) {
+      payload.attendee_name = guestName.trim();
+      payload.attendee_email = guestEmail.trim();
+      payload.attendee_phone = guestPhone.trim();
+    }
 
-    const result = await createBooking.mutateAsync(payload);
-    navigate(`/customer/bookings/${result.data.id}/checkout`);
-  };
-
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget && !createBooking.isPending) onClose();
+    createBooking.mutate(payload, {
+      onSuccess: (result) => {
+        navigate(`/customer/bookings/${result.data.id}/checkout`);
+        onCloseRef.current();
+      },
+      onError: (error) => {
+        setSubmitError(getErrorMessage(error));
+      },
+    });
   };
 
   if (!isOpen) return null;
-
-  if (loadingAvailability) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={handleBackdropClick}>
-        <div className="bg-card border border-border rounded-xl p-8 max-w-md w-full text-center">
-          <Loader2 className="size-8 mx-auto animate-spin text-primary mb-3" />
-          <p className="text-sm text-muted-foreground">Loading availability...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loadingAvailability) return <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"><div className="bg-card p-8 rounded-xl"><Loader2 className="size-8 animate-spin text-primary" /></div></div>;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={handleBackdropClick}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={(e) => e.target === e.currentTarget && !createBooking.isPending && onCloseRef.current()}>
       <div className="bg-card border border-border rounded-xl w-full max-w-md shadow-modal max-h-[90vh] overflow-y-auto">
         <div className="p-6 border-b border-border">
           <h2 className="text-xl font-heading font-semibold">Book This Space</h2>
@@ -204,138 +208,85 @@ export function BookingFormDialog({
 
         <div className="p-6 space-y-4">
           {activeSlots.length === 0 ? (
-            <div className="p-4 rounded-lg bg-warning/10 border border-warning/30 text-sm">
-              <div className="flex items-start gap-2.5">
-                <AlertCircle className="size-4 text-warning mt-0.5 shrink-0" />
-                <div>
-                  <p className="font-semibold text-warning mb-1">Not available for booking yet</p>
-                  <p className="text-muted-foreground">The owner hasn't set up any time slots. Please check back later.</p>
-                </div>
-              </div>
-            </div>
+            <div className="p-4 rounded-lg bg-warning/10 text-warning text-sm">Not available for booking yet.</div>
           ) : (
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                
                 <FormField control={form.control} name="date" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="flex items-center gap-1.5">
-                      <Calendar className="size-3.5" />Date
-                    </FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} min={defaultDate} />
-                    </FormControl>
+                    <FormLabel>Date</FormLabel>
+                    <FormControl><Input type="date" {...field} min={defaultDate} /></FormControl>
                     {date && selectedDay !== null && (
-                      <div className="text-xs text-muted-foreground">{DAY_NAMES[selectedDay]}</div>
+                      <div className="text-xs text-muted-foreground flex items-center gap-2">
+                        {DAY_NAMES[selectedDay]}
+                        {isSelectedDateFullyBooked && (
+                          <span className="text-destructive font-semibold bg-destructive/10 px-2 py-0.5 rounded">Fully Booked</span>
+                        )}
+                      </div>
                     )}
                     <FormMessage />
                   </FormItem>
                 )} />
 
-                {date && selectedDay !== null && (
-                  <div className={`flex items-center gap-2 p-3 rounded-lg text-sm ${
-                    isDayAvailable
-                      ? 'bg-success/10 text-success border border-success/20'
-                      : 'bg-destructive/10 text-destructive border border-destructive/20'
-                  }`}>
-                    {isDayAvailable ? (
-                      <><CheckCircle2 className="size-4 shrink-0" />
-                        <span className="font-medium">Available on {DAY_NAMES[selectedDay]}</span></>
-                    ) : (
-                      <><XCircle className="size-4 shrink-0" />
-                        <span className="font-medium">Not available on {DAY_NAMES[selectedDay]}</span></>
-                    )}
+                {isSelectedDateFullyBooked && (
+                  <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-xs text-destructive flex items-start gap-2">
+                    <AlertCircle className="size-4 shrink-0 mt-0.5" />
+                    <span>This date is fully booked for this space. Please select another date.</span>
                   </div>
                 )}
 
-                {isDayAvailable && slotsForDay.length > 0 && (
-                  <div className="flex items-start gap-2 p-3 bg-info/5 border border-info/20 rounded-lg text-xs">
-                    <Info className="size-3.5 text-info shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-medium text-info block mb-1">Available hours:</span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {slotsForDay.map((s) => (
-                          <span key={s.id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-info/10 text-info font-mono">
-                            <Clock className="size-3" />{s.start_time.slice(0, 5)} → {s.end_time.slice(0, 5)}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {isDayAvailable && (
+                {!isSelectedDateFullyBooked && isDayAvailable && (
                   <div className="grid grid-cols-2 gap-3">
                     <FormField control={form.control} name="startTime" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-1.5">
-                          <Clock className="size-3.5" />Start
-                        </FormLabel>
-                        <FormControl>
-                          <Input type="time" {...field} min={timeRange?.minStart} max={timeRange?.maxEnd} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                      <FormItem><FormLabel>Start</FormLabel><FormControl><Input type="time" {...field} min={timeRange?.minStart} max={timeRange?.maxEnd} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="endTime" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-1.5">
-                          <Clock className="size-3.5" />End
-                        </FormLabel>
-                        <FormControl>
-                          <Input type="time" {...field} min={timeRange?.minStart} max={timeRange?.maxEnd} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                      <FormItem><FormLabel>End</FormLabel><FormControl><Input type="time" {...field} min={timeRange?.minStart} max={timeRange?.maxEnd} /></FormControl><FormMessage /></FormItem>
                     )} />
                   </div>
                 )}
 
-                {isDayAvailable && !timeValidation.valid && timeValidation.message && (
-                  <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-xs text-destructive">
-                    {timeValidation.message}
-                  </div>
+                {!isSelectedDateFullyBooked && isDayAvailable && duration > 0 && timeValidation.valid && (
+                  <>
+                    <CouponInput value={couponCode} onChange={setCouponCode} onApply={setAppliedCoupon} />
+                    
+                    <div className="p-4 bg-muted/30 border border-border rounded-lg space-y-3 mt-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked={isThirdParty} onChange={(e) => setIsThirdParty(e.target.checked)} className="w-4 h-4 rounded border-gray-300 text-primary" />
+                        <span className="text-sm font-medium">I'm booking for someone else</span>
+                      </label>
+                      {isThirdParty && (
+                        <div className="space-y-3 pt-2">
+                          <Input placeholder="Guest Name *" value={guestName} onChange={(e) => setGuestName(e.target.value)} />
+                          <Input type="email" placeholder="Guest Email *" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} />
+                          <Input placeholder="Guest Phone *" value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg space-y-2">
+                      <div className="flex justify-between text-sm"><span className="text-muted-foreground">Subtotal</span><span className="font-mono">{subtotal.toFixed(2)} EGP</span></div>
+                      {appliedCoupon && <div className="flex justify-between text-sm text-success"><span>Discount ({appliedCoupon.code})</span><span className="font-mono">-{discount.toFixed(2)} EGP</span></div>}
+                      <div className="flex justify-between pt-2 border-t border-primary/20"><span className="font-semibold">Total</span><span className="font-mono font-bold text-primary text-lg">{finalTotal.toFixed(2)} EGP</span></div>
+                    </div>
+                  </>
                 )}
 
-                {isDayAvailable && duration > 0 && timeValidation.valid && (
-                  <CouponInput value={couponCode} onChange={setCouponCode} onApply={setAppliedCoupon} />
-                )}
-
-                {isDayAvailable && duration > 0 && timeValidation.valid && (
-                  <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Duration</span>
-                      <span className="font-medium">{duration.toFixed(1)} hours</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Price per hour</span>
-                      <span className="font-mono">{pricePerHour.toFixed(2)} EGP</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Subtotal</span>
-                      <span className="font-mono">{subtotal.toFixed(2)} EGP</span>
-                    </div>
-                    {appliedCoupon && (
-                      <div className="flex justify-between text-sm text-success">
-                        <span className="flex items-center gap-1">
-                          <Ticket className="size-3.5" />Discount ({appliedCoupon.code})
-                        </span>
-                        <span className="font-mono">-{discount.toFixed(2)} EGP</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between pt-2 border-t border-primary/20">
-                      <span className="font-semibold">Total</span>
-                      <span className="font-mono font-bold text-primary text-lg">{finalTotal.toFixed(2)} EGP</span>
-                    </div>
+                {submitError && (
+                  <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
+                    {submitError}
                   </div>
                 )}
 
                 <div className="flex gap-2 pt-2">
-                  <Button type="button" variant="outline" onClick={onClose}
-                    disabled={createBooking.isPending} className="flex-1">Cancel</Button>
-                  <Button type="submit"
-                    disabled={createBooking.isPending || !isDayAvailable || !timeValidation.valid || duration <= 0}
-                    className="flex-1">
-                    {createBooking.isPending && <Loader2 className="size-4 animate-spin" />}
+                  <Button type="button" variant="outline" onClick={() => onCloseRef.current()} disabled={createBooking.isPending} className="flex-1">Cancel</Button>
+                  <Button 
+                    type="submit" 
+                    disabled={createBooking.isPending || !isDayAvailable || isSelectedDateFullyBooked || !timeValidation.valid || duration <= 0 || (isThirdParty && (!guestName.trim() || !guestEmail.trim() || !guestPhone.trim()))} 
+                    className="flex-1"
+                  >
+                    {createBooking.isPending && <Loader2 className="size-4 animate-spin me-2" />}
                     {createBooking.isPending ? 'Booking...' : 'Book Now'}
                   </Button>
                 </div>

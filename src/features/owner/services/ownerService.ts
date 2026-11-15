@@ -5,7 +5,6 @@ import type {
   CreateSpacePayload,
   UpdateSpacePayload,
   OwnerSpaceResponse,
-  Availability,
   AvailabilityPayload,
   AvailabilityResponse,
   AvailabilityListResponse,

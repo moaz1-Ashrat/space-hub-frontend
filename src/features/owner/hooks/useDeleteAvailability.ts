@@ -2,6 +2,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { ownerService } from '../services/ownerService';
+import { getErrorMessage } from '@/lib/errors';
 
 export function useDeleteAvailability(spaceId: number) {
   const qc = useQueryClient();
@@ -12,8 +13,8 @@ export function useDeleteAvailability(spaceId: number) {
       qc.invalidateQueries({ queryKey: ['owner', 'availability', spaceId] });
       toast.success('Availability deleted');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to delete');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error) || 'Failed to delete');
     },
   });
 }

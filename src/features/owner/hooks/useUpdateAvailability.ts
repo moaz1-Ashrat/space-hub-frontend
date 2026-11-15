@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { ownerService } from '../services/ownerService';
 import type { AvailabilityPayload } from '../types';
+import { getErrorMessage } from '@/lib/errors';
 
 export function useUpdateAvailability(spaceId: number) {
   const qc = useQueryClient();
@@ -19,8 +20,8 @@ export function useUpdateAvailability(spaceId: number) {
       qc.invalidateQueries({ queryKey: ['owner', 'availability', spaceId] });
       toast.success('Availability updated');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to update');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error) || 'Failed to update');
     },
   });
 }

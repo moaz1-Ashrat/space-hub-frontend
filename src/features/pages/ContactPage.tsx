@@ -8,7 +8,6 @@ import { Mail, Phone, MapPin, Send, Loader2, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import {
   Form,
   FormControl,
@@ -59,6 +58,7 @@ export function ContactPage() {
   });
 
   const onSubmit = async (values: ContactForm) => {
+    void values;
     // Simulate submission (no backend yet)
     await new Promise((r) => setTimeout(r, 800));
     toast.success("Message sent! We'll get back to you soon.");

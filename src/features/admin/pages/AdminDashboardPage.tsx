@@ -17,6 +17,7 @@ import {
 
 import { useDashboard } from '../hooks/useDashboard';
 import { DashboardKPICard } from '../components/DashboardKPICard';
+import type { DashboardKPICardProps } from '../components/DashboardKPICard';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { staggerContainer, staggerItem, fadeUp } from '@/lib/animations';
@@ -125,7 +126,7 @@ export function AdminDashboardPage() {
           },
         ].map((kpi, i) => (
           <motion.div key={i} variants={staggerItem}>
-            <DashboardKPICard {...(kpi as any)} />
+            <DashboardKPICard {...(kpi as DashboardKPICardProps)} />
           </motion.div>
         ))}
       </motion.div>
@@ -164,7 +165,7 @@ export function AdminDashboardPage() {
           },
         ].map((kpi, i) => (
           <motion.div key={i} variants={staggerItem}>
-            <DashboardKPICard {...(kpi as any)} />
+            <DashboardKPICard {...(kpi as DashboardKPICardProps)} />
           </motion.div>
         ))}
       </motion.div>

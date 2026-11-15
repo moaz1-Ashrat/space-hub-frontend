@@ -1,4 +1,4 @@
-﻿import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router-dom';
 import { PublicLayout } from '../../components/layouts/PublicLayout';
 import { AuthLayout } from '../../components/layouts/AuthLayout';
 import { DashboardLayout } from '../../components/layouts/DashboardLayout';
@@ -27,10 +27,12 @@ import { CustomerOverviewPage } from '../../features/customer/pages/CustomerOver
 import { MyBookingsPage } from '../../features/bookings/pages/MyBookingsPage';
 import { BookingDetailPage } from '../../features/bookings/pages/BookingDetailPage';
 import { CheckoutPage } from '../../features/bookings/pages/CheckoutPage';
+import { InvoicePage } from '../../features/bookings/pages/InvoicePage';
 import { PaymentsPage } from '../../features/payments/pages/PaymentsPage';
 import { MyReviewsPage } from '../../features/reviews/pages/MyReviewsPage';
 import { ProfilePage } from '../../features/customer/pages/ProfilePage';
 import { MyCouponsPage } from '../../features/coupons/pages/MyCouponsPage';
+import { PaymentCallbackPage } from '../../features/payments/pages/PaymentCallbackPage';
 
 // Owner
 import { OwnerOverviewPage } from '../../features/owner/pages/OwnerOverviewPage';
@@ -54,6 +56,7 @@ import { AdminUserDetailPage } from '../../features/admin/pages/AdminUserDetailP
 import { AdminCouponsPage } from '../../features/admin/pages/AdminCouponsPage';
 
 export const router = createBrowserRouter([
+  // Public
   {
     path: '/',
     element: <PublicLayout />,
@@ -65,6 +68,8 @@ export const router = createBrowserRouter([
       { path: 'contact', element: <ContactPage /> },
     ],
   },
+
+  // Auth
   {
     element: <AuthLayout />,
     children: [
@@ -75,6 +80,8 @@ export const router = createBrowserRouter([
       { path: '/reset-password', element: <ResetPasswordPage /> },
     ],
   },
+
+  // Customer
   {
     element: <ProtectedRoute />,
     children: [
@@ -88,6 +95,7 @@ export const router = createBrowserRouter([
               { path: '/customer/bookings', element: <MyBookingsPage /> },
               { path: '/customer/bookings/:id', element: <BookingDetailPage /> },
               { path: '/customer/bookings/:id/checkout', element: <CheckoutPage /> },
+              { path: '/customer/bookings/:id/invoice', element: <InvoicePage /> },
               { path: '/customer/payments', element: <PaymentsPage /> },
               { path: '/customer/reviews', element: <MyReviewsPage /> },
               { path: '/customer/coupons', element: <MyCouponsPage /> },
@@ -100,6 +108,21 @@ export const router = createBrowserRouter([
       },
     ],
   },
+
+  // Payment Callback (Open for customer after kashier)
+  {
+    element: <ProtectedRoute />,
+    children: [
+      {
+        element: <DashboardLayout />,
+        children: [
+          { path: '/payment-callback', element: <PaymentCallbackPage /> },
+        ]
+      }
+    ]
+  },
+
+  // Owner
   {
     element: <ProtectedRoute />,
     children: [
@@ -123,6 +146,8 @@ export const router = createBrowserRouter([
       },
     ],
   },
+
+  // Admin
   {
     element: <ProtectedRoute />,
     children: [
@@ -147,5 +172,6 @@ export const router = createBrowserRouter([
       },
     ],
   },
+
   { path: '*', element: <NotFoundPage /> },
 ]);

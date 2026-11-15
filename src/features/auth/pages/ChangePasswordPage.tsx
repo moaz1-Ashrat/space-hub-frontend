@@ -27,12 +27,13 @@ const schema = z
     message: 'Passwords do not match',
     path: ['new_password_confirmation'],
   });
+type ChangePasswordFormData = z.infer<typeof schema>;
 
 export function ChangePasswordPage() {
   const navigate = useNavigate();
   const changeMutation = useChangePassword();
 
-  const form = useForm({
+  const form = useForm<ChangePasswordFormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       current_password: '',
@@ -41,13 +42,13 @@ export function ChangePasswordPage() {
     },
   });
 
-  const onSubmit = async (values: any) => {
+  const onSubmit = async (values: ChangePasswordFormData) => {
     try {
       await changeMutation.mutateAsync(values);
       toast.success('Password changed successfully.');
       navigate('/customer/profile');
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to change password.');
+    } catch {
+      toast.error('Failed to change password.');
     }
   };
 

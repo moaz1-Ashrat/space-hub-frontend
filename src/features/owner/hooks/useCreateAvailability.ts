@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { ownerService } from '../services/ownerService';
 import type { AvailabilityPayload } from '../types';
+import { getErrorMessage } from '@/lib/errors';
 
 export function useCreateAvailability(spaceId: number) {
   const qc = useQueryClient();
@@ -14,8 +15,8 @@ export function useCreateAvailability(spaceId: number) {
       qc.invalidateQueries({ queryKey: ['owner', 'availability', spaceId] });
       toast.success('Availability slot added');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to add slot');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error) || 'Failed to add slot');
     },
   });
 }

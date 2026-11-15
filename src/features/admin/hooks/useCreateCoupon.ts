@@ -2,6 +2,7 @@
 import { toast } from 'sonner';
 import { adminService } from '../services/adminService';
 import type { CreateCouponPayload } from '../types';
+import { getErrorMessage } from '@/lib/errors';
 
 export function useCreateCoupon() {
   const qc = useQueryClient();
@@ -13,8 +14,8 @@ export function useCreateCoupon() {
       qc.invalidateQueries({ queryKey: ['admin', 'coupons'] });
       toast.success('Coupon created successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to create coupon');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error) || 'Failed to create coupon');
     },
   });
 }

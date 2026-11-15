@@ -36,7 +36,7 @@ import { DAY_NAMES, type Availability, type AvailabilityPayload } from '../types
 
 const schema = z
   .object({
-    day_of_week: z.coerce.number().min(0).max(6),
+    day_of_week: z.number().min(0).max(6),
     start_time: z.string().min(1, 'Required'),
     end_time: z.string().min(1, 'Required'),
     is_available: z.boolean().default(true),
@@ -46,7 +46,8 @@ const schema = z
     path: ['end_time'],
   });
 
-type FormData = z.infer<typeof schema>;
+type FormInput = z.input<typeof schema>;
+type FormData = z.output<typeof schema>;
 
 interface AvailabilityFormDialogProps {
   open: boolean;
@@ -90,7 +91,7 @@ export function AvailabilityFormDialog({
   const isEdit = !!availability;
   const [applyToAllWeek, setApplyToAllWeek] = useState(false);
 
-  const form = useForm<FormData>({
+  const form = useForm<FormInput, unknown, FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       day_of_week: 1,

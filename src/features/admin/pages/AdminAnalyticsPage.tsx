@@ -32,6 +32,7 @@ import {
   useAnalyticsCoupons,
 } from '../hooks/useAdminAnalytics';
 import { DashboardKPICard } from '../components/DashboardKPICard';
+import type { DashboardKPICardProps } from '../components/DashboardKPICard';
 import { ChartCard } from '@/components/charts/ChartCard';
 import { ChartSkeleton } from '@/components/charts/ChartSkeleton';
 import { AreaChart } from '@/components/charts/AreaChart';
@@ -209,7 +210,7 @@ export function AdminAnalyticsPage() {
       >
         {kpis.map((kpi, i) => (
           <motion.div key={i} variants={staggerItem}>
-            <DashboardKPICard {...(kpi as any)} />
+            <DashboardKPICard {...(kpi as DashboardKPICardProps)} />
           </motion.div>
         ))}
       </motion.div>
